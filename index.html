@@ -3,962 +3,1226 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📊 Місячний P&L</title>
+<title>AVANTI — Дашборд</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #080b10;
-  --s1: #0d1117;
-  --s2: #141922;
-  --s3: #1c2333;
-  --border: rgba(255,255,255,0.07);
-  --text: #e8f0ff;
-  --muted: rgba(232,240,255,0.4);
-  --muted2: rgba(232,240,255,0.2);
-
-  --growth: #4ade80;    /* каса росту */
-  --commerce: #f59e0b;  /* комерція */
-  --life: #818cf8;      /* життя */
-  --mandatory: #fb7185; /* обов'язкові */
-  --rising: #34d399;    /* ріст */
-
-  --r: 14px;
+  --bg:#080b10; --s1:#0d1117; --s2:#141922; --s3:#1c2333;
+  --border:rgba(255,255,255,.07); --text:#e8f0ff; --muted:rgba(232,240,255,.4);
+  --green:#4ade80; --amber:#f59e0b; --purple:#818cf8; --red:#fb7185; --cyan:#22d3ee;
+  --r:14px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{
-  font-family:'DM Sans',sans-serif;
-  background:var(--bg); color:var(--text);
-  min-height:100vh; overflow-x:hidden;
-}
-body::before{
-  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-  background:
-    radial-gradient(ellipse 55% 35% at 5% 15%, rgba(74,222,128,.1) 0%, transparent 55%),
-    radial-gradient(ellipse 45% 30% at 95% 85%, rgba(245,158,11,.08) 0%, transparent 50%),
-    radial-gradient(ellipse 40% 25% at 55% 5%,  rgba(129,140,248,.07) 0%, transparent 50%);
-}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 55% 35% at 5% 15%,rgba(74,222,128,.08) 0%,transparent 55%),
+  radial-gradient(ellipse 45% 30% at 95% 85%,rgba(245,158,11,.06) 0%,transparent 50%),
+  radial-gradient(ellipse 40% 25% at 55% 5%,rgba(129,140,248,.06) 0%,transparent 50%);}
 
-.app{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 16px 80px;}
+/* ── TABS ── */
+.tab-bar{position:sticky;top:0;z-index:50;background:rgba(8,11,16,.95);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);display:flex;padding:0 16px;}
+.tab-btn{padding:14px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+  border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .2s;white-space:nowrap;}
+.tab-btn.active{color:var(--text);border-bottom-color:var(--green);}
+.tab-btn:hover{color:var(--text);}
+.tab-panel{display:none;padding:20px 16px 80px;max-width:960px;margin:0 auto;}
+.tab-panel.active{display:block;}
 
-/* ── HEADER ── */
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
-.logo{display:flex;align-items:center;gap:12px;}
-.logo-icon{
-  width:44px;height:44px;border-radius:12px;
-  background:linear-gradient(135deg,#4ade80,#34d399);
-  display:flex;align-items:center;justify-content:center;font-size:20px;
-  box-shadow:0 0 28px rgba(74,222,128,.3);
-}
-.logo-title{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;letter-spacing:.5px;}
-.logo-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+/* ── COMMON ── */
+.section-title{font-family:'Unbounded',sans-serif;font-size:11px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);}
+.btn{padding:10px 20px;border-radius:10px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;transition:all .2s;}
+.btn-green{background:linear-gradient(135deg,#4ade80,#34d399);color:#0a1a0f;box-shadow:0 4px 20px rgba(74,222,128,.25);}
+.btn-green:hover{transform:translateY(-1px);}
+.btn-ghost{background:var(--s2);border:1px solid var(--border);color:var(--text);}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2);}
+.inp{background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  padding:10px 14px;outline:none;transition:border-color .15s;width:100%;}
+.inp:focus{border-color:var(--green);}
+select.inp option{background:var(--s2);}
+
+/* ── MONTH NAV ── */
 .month-nav{display:flex;align-items:center;gap:8px;}
-.mnav-btn{
-  width:32px;height:32px;border-radius:9px;border:1px solid var(--border);
+.mnav-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--border);
   background:var(--s2);color:var(--text);cursor:pointer;font-size:15px;
-  display:flex;align-items:center;justify-content:center;transition:all .18s;
-}
-.mnav-btn:hover{background:var(--s3);border-color:rgba(255,255,255,.15);}
-.mnav-label{font-family:'Unbounded',sans-serif;font-size:13px;letter-spacing:.5px;min-width:160px;text-align:center;}
+  display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;}
+.mnav-btn:hover{background:var(--s3);}
+.mnav-label{font-family:'Unbounded',sans-serif;font-size:12px;letter-spacing:.3px;text-align:center;white-space:nowrap;}
 
-/* ── OBOROT INPUT ── */
-.oborot-bar{
-  background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
-  padding:20px 24px;margin-bottom:20px;
-  display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;
-}
+/* ── STATS ROW ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr);}}
+.stat{padding:16px 18px;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);margin-bottom:8px;font-weight:600;}
+.stat-val{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* ── PROGRESS ── */
+.prog-track{height:6px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden;}
+.prog-fill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+/* ── PAYMENTS TABLE (mobile cards) ── */
+.pay-card{background:var(--s2);border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;margin-bottom:8px;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.pay-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.pay-card-name{font-weight:700;font-size:15px;flex:1;}
+.pay-card-amount{font-weight:800;font-size:16px;flex-shrink:0;}
+.pay-card-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;}
+.badge-fixed{background:rgba(148,163,184,.12);color:#94a3b8;}
+.badge-var{background:rgba(251,146,60,.1);color:#fb923c;}
+.badge-auto{background:rgba(74,222,128,.1);color:var(--green);}
+.pill{display:inline-flex;align-items:center;padding:4px 12px;border-radius:99px;
+  font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.pill-paid{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.2);}
+.pill-pending{background:rgba(252,185,92,.12);color:var(--amber);border:1px solid rgba(252,185,92,.2);}
+.pill-overdue{background:rgba(251,113,133,.12);color:var(--red);border:1px solid rgba(251,113,133,.2);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.day-badge{display:inline-block;width:28px;height:28px;border-radius:8px;
+  text-align:center;line-height:28px;font-weight:700;font-size:13px;flex-shrink:0;}
+.day-today{background:rgba(129,140,248,.3);color:#c7d2fe;border:1px solid var(--purple);}
+.day-soon{background:rgba(252,185,92,.2);color:var(--amber);}
+.day-overdue-d{background:rgba(251,113,133,.2);color:var(--red);}
+.day-normal{background:rgba(255,255,255,.05);color:var(--muted);}
+
+/* ── PnL ── */
+.oborot-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:20px;margin-bottom:14px;}
 @media(max-width:600px){.oborot-bar{grid-template-columns:1fr;}}
 .inp-group{display:flex;flex-direction:column;gap:6px;}
-.inp-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;}
+.inp-label{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);font-weight:600;}
 .inp-wrap{position:relative;}
-.inp-wrap input{
-  width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;
-  color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;
-  padding:10px 14px 10px 32px;outline:none;transition:border-color .15s;
-}
-.inp-wrap input:focus{border-color:var(--growth);}
-.inp-wrap .currency{
-  position:absolute;left:12px;top:50%;transform:translateY(-50%);
-  color:var(--muted);font-size:13px;font-weight:700;pointer-events:none;
-}
-.inp-computed{
-  background:var(--s2);border:1px solid var(--border);border-radius:10px;
-  padding:10px 14px;font-size:16px;font-weight:700;color:var(--growth);
-  opacity:.8;
-}
-
-/* ── TOP KPI ── */
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
-@media(max-width:600px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
-.kpi{
-  background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
-  padding:16px 18px;position:relative;overflow:hidden;
-}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-.kpi.k-oborot::before{background:linear-gradient(90deg,#4ade80,#34d399);}
-.kpi.k-marzha::before{background:linear-gradient(90deg,#60a5fa,#818cf8);}
-.kpi.k-vitrati::before{background:#fb7185;}
-.kpi.k-profit::before{background:linear-gradient(90deg,#f59e0b,#fcd34d);}
-.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);margin-bottom:8px;font-weight:600;}
-.kpi-val{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;line-height:1.1;}
-.kpi-val.green{color:var(--growth);}
-.kpi-val.blue{color:#818cf8;}
-.kpi-val.red{color:#fb7185;}
-.kpi-val.amber{color:#f59e0b;}
-.kpi-pct{font-size:11px;color:var(--muted);margin-top:4px;}
-
-/* ── SECTION ── */
-.section{
-  background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
-  margin-bottom:14px;overflow:hidden;
-}
-.sec-head{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 20px;cursor:pointer;user-select:none;
-  border-bottom:1px solid var(--border);
-  transition:background .15s;
-}
+.inp-wrap input{padding-left:28px;}
+.inp-currency{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;font-weight:700;pointer-events:none;}
+.inp-computed{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:16px;font-weight:700;color:var(--green);}
+.sec-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;
+  cursor:pointer;user-select:none;transition:background .15s;}
 .sec-head:hover{background:rgba(255,255,255,.02);}
-.sec-head-left{display:flex;align-items:center;gap:10px;}
-.sec-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .sec-name{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:600;}
-.sec-pct-target{font-size:11px;color:var(--muted);margin-left:4px;}
-.sec-head-right{display:flex;align-items:center;gap:16px;}
-.sec-total{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;}
-.sec-pct-actual{
-  font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;
-  background:rgba(255,255,255,.06);
-}
-.sec-arrow{font-size:12px;color:var(--muted);transition:transform .25s;}
-.sec-arrow.open{transform:rotate(180deg);}
+.sec-target{font-size:11px;color:var(--muted);margin-left:4px;}
 .sec-body{padding:0 20px 16px;display:none;}
 .sec-body.open{display:block;}
-
-/* subsection */
-.subsec{margin-top:14px;}
-.subsec-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
-
-/* row */
-.row{
-  display:grid;grid-template-columns:1fr auto auto;gap:8px;
-  align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);
-}
+.sec-arrow{font-size:12px;color:var(--muted);transition:transform .25s;}
+.sec-arrow.open{transform:rotate(180deg);}
+.row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;
+  padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);}
 .row:last-child{border-bottom:none;}
 .row-name{font-size:13px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-.row-badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;}
-.badge-fixed{background:rgba(148,163,184,.12);color:#94a3b8;}
-.badge-auto{background:rgba(74,222,128,.1);color:var(--growth);}
-.badge-var{background:rgba(251,146,60,.1);color:#fb923c;}
-.row-pct{font-size:12px;color:var(--muted);text-align:right;min-width:54px;}
-.row-amount{font-size:14px;font-weight:700;text-align:right;min-width:90px;}
-
-/* inline input */
-.row-inp{
-  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+.row-pct{font-size:12px;color:var(--muted);text-align:right;min-width:50px;}
+.row-amt{font-size:14px;font-weight:700;text-align:right;min-width:90px;}
+.row-inp{background:var(--s2);border:1px solid var(--border);border-radius:8px;
   color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
-  padding:6px 10px;outline:none;width:110px;text-align:right;
-  transition:border-color .15s;
-}
-.row-inp:focus{border-color:var(--growth);}
-
-/* logistics weekly */
-.logistics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px;}
-@media(max-width:480px){.logistics-grid{grid-template-columns:repeat(2,1fr);}}
-.log-inp-wrap{display:flex;flex-direction:column;gap:4px;}
-.log-inp-label{font-size:10px;color:var(--muted);text-align:center;}
-.log-inp{
-  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  padding:6px 10px;outline:none;width:110px;text-align:right;transition:border-color .15s;}
+.row-inp:focus{border-color:var(--green);}
+.log-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px;}
+@media(max-width:480px){.log-grid{grid-template-columns:repeat(2,1fr);}}
+.log-inp{background:var(--s2);border:1px solid var(--border);border-radius:8px;
   color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
-  padding:8px 10px;outline:none;width:100%;text-align:center;
-  transition:border-color .15s;
-}
-.log-inp:focus{border-color:var(--growth);}
-.log-total{margin-top:8px;text-align:right;font-size:13px;color:var(--muted);}
-.log-total span{color:var(--text);font-weight:700;}
+  padding:8px 10px;outline:none;width:100%;text-align:center;transition:border-color .15s;}
+.log-inp:focus{border-color:var(--green);}
+.subsec-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
+  font-weight:700;margin:14px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 
-/* progress bar */
-.progress-bar{height:5px;border-radius:99px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden;}
-.progress-fill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+/* ── CLIENTS ── */
+.cat-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:.5px;}
+.cat-active{background:rgba(74,222,128,.12);color:var(--green);}
+.cat-special{background:rgba(34,211,238,.12);color:var(--cyan);}
+.cat-vip{background:rgba(129,140,248,.15);color:var(--purple);}
+.cat-limited{background:rgba(245,158,11,.12);color:var(--amber);}
+.cat-exclusive{background:rgba(251,113,133,.15);color:var(--red);}
+.cat-none{background:rgba(255,255,255,.05);color:var(--muted);}
+.client-card{background:var(--s2);border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;margin-bottom:8px;transition:border-color .2s;}
+.client-card.near-target{border-color:rgba(245,158,11,.3);}
+.client-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.client-name{font-weight:700;font-size:15px;}
+.client-total{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:700;}
+.client-halves{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.half-inp-wrap{display:flex;flex-direction:column;gap:4px;}
+.half-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.client-bottom{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.viber-btn{padding:6px 14px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;
+  background:rgba(129,140,248,.15);color:var(--purple);transition:all .15s;}
+.viber-btn:hover{background:rgba(129,140,248,.25);}
+.progress-pct{font-size:11px;color:var(--muted);}
 
-/* summary table */
-.summary{
-  background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
-  padding:20px 24px;margin-bottom:14px;
-}
-.summary-title{font-family:'Unbounded',sans-serif;font-size:13px;margin-bottom:16px;color:var(--muted);}
-.sum-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+/* ── SUMMARY ── */
+.sum-row{display:flex;justify-content:space-between;align-items:center;
+  padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);}
 .sum-row:last-child{border-bottom:none;}
 .sum-dot{width:8px;height:8px;border-radius:50%;margin-right:8px;display:inline-block;}
 .sum-name{font-size:13px;display:flex;align-items:center;}
-.sum-vals{display:flex;gap:20px;align-items:center;}
+.sum-vals{display:flex;gap:16px;align-items:center;}
 .sum-pct{font-size:12px;color:var(--muted);min-width:40px;text-align:right;}
 .sum-amt{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:600;min-width:100px;text-align:right;}
-.sum-row.total{background:rgba(255,255,255,.03);border-radius:8px;padding:10px 12px;margin-top:8px;}
+.sum-total{background:rgba(255,255,255,.03);border-radius:8px;padding:10px 12px;margin-top:8px;}
 
-/* donut */
+/* ── SAVED MONTHS ── */
+.months-bar{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+.month-chip{padding:7px 12px;border-radius:9px;border:1px solid var(--border);
+  background:var(--s2);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center;gap:1px;
+  transition:all .15s;}
+.month-chip.active{border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.1);color:var(--green);}
+
+/* ── IMPORT MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
+  z-index:200;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{background:#1a1a26;border:1px solid rgba(255,255,255,.1);border-radius:20px;
+  padding:28px;width:100%;max-width:500px;box-shadow:0 40px 80px rgba(0,0,0,.6);}
+.modal-title{font-family:'Unbounded',sans-serif;font-size:18px;margin-bottom:16px;}
+.modal-footer{display:flex;gap:10px;margin-top:16px;justify-content:flex-end;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--s3);border:1px solid var(--border);border-radius:12px;
+  padding:12px 22px;font-size:13px;font-weight:600;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);transition:transform .3s;z-index:999;white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* DONUT */
 .donut-wrap{display:flex;align-items:center;gap:20px;margin-top:16px;flex-wrap:wrap;}
-.donut-svg{flex-shrink:0;}
-.donut-legend{display:flex;flex-direction:column;gap:8px;}
 .legend-item{display:flex;align-items:center;gap:8px;font-size:12px;}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 
-/* save btn */
-.save-row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap;}
-.btn{
-  padding:10px 22px;border-radius:10px;border:none;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:.3px;
-  transition:all .2s;
-}
-.btn-save{background:linear-gradient(135deg,#4ade80,#34d399);color:#0a1a0f;box-shadow:0 4px 20px rgba(74,222,128,.25);}
-.btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(74,222,128,.4);}
-.btn-ghost{background:var(--s2);border:1px solid var(--border);color:var(--text);}
-.btn-ghost:hover{border-color:rgba(255,255,255,.2);}
-.btn-export{background:var(--s2);border:1px solid var(--border);color:var(--text);}
-
-/* toast */
-#toast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
-  background:var(--s3);border:1px solid var(--border);border-radius:12px;
-  padding:12px 22px;font-size:13px;font-weight:600;
-  box-shadow:0 8px 32px rgba(0,0,0,.5);
-  transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:999;white-space:nowrap;
-}
-#toast.show{transform:translateX(-50%) translateY(0);}
-
 @media(max-width:480px){
-  .sec-head{padding:12px 14px;}
-  .sec-body{padding:0 14px 14px;}
-  .summary{padding:16px 14px;}
-  .kpi-val{font-size:16px;}
   .row{grid-template-columns:1fr auto;}
   .row-pct{display:none;}
+  .tab-btn{padding:12px 12px;font-size:12px;}
 }
 </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="logo">
-      <div class="logo-icon">📊</div>
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('payments',this)">📅 Платежі</button>
+  <button class="tab-btn" onclick="switchTab('pnl',this)">📊 P&L</button>
+  <button class="tab-btn" onclick="switchTab('clients',this)">👥 Клієнти</button>
+</div>
+
+<!-- ══════════ TAB 1: PAYMENTS ══════════ -->
+<div class="tab-panel active" id="tab-payments">
+
+  <!-- header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--purple),#a78bfa);display:flex;align-items:center;justify-content:center;font-size:18px;">📅</div>
       <div>
-        <div class="logo-title">P&L ДАШБОРД</div>
-        <div class="logo-sub">Місячний розподіл</div>
+        <div style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;">ПЛАТЕЖІ</div>
+        <div style="font-size:11px;color:var(--muted);">Щомісячний трекер</div>
       </div>
     </div>
     <div class="month-nav">
-      <button class="mnav-btn" onclick="changeMonth(-1)">‹</button>
-      <span class="mnav-label" id="month-label"></span>
-      <button class="mnav-btn" onclick="changeMonth(1)">›</button>
+      <button class="mnav-btn" onclick="changePayMonth(-1)">‹</button>
+      <span class="mnav-label" id="pay-month-label"></span>
+      <button class="mnav-btn" onclick="changePayMonth(1)">›</button>
     </div>
   </div>
 
-  <!-- OBOROT / MARZHA -->
-  <div class="oborot-bar">
-    <div class="inp-group">
-      <div class="inp-label">Оборот (валовий продаж) ₴</div>
-      <div class="inp-wrap">
-        <span class="currency">₴</span>
-        <input type="number" id="inp-oborot" placeholder="0" oninput="recalc()">
+  <!-- stats -->
+  <div class="stats">
+    <div class="card stat" style="--c:var(--red)"><div class="stat" style="padding:0"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--red)"></div></div>
+      <div class="stat-label">Витрати</div>
+      <div class="stat-val" style="color:var(--red)" id="p-stat-total">0₴</div>
+      <div class="stat-sub" id="p-stat-count">0 платежів</div>
+    </div>
+    <div class="card stat">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--green)"></div>
+      <div class="stat-label">Оплачено</div>
+      <div class="stat-val" style="color:var(--green)" id="p-stat-paid">0₴</div>
+      <div class="stat-sub" id="p-stat-paid-c">0 платежів</div>
+    </div>
+    <div class="card stat">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--amber)"></div>
+      <div class="stat-label">Очікується</div>
+      <div class="stat-val" style="color:var(--amber)" id="p-stat-pend">0₴</div>
+      <div class="stat-sub" id="p-stat-pend-c">0 платежів</div>
+    </div>
+    <div class="card stat">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--red)"></div>
+      <div class="stat-label">Прострочено</div>
+      <div class="stat-val" style="color:var(--red)" id="p-stat-over">0₴</div>
+      <div class="stat-sub" id="p-stat-over-c">0 платежів</div>
+    </div>
+  </div>
+
+  <!-- progress -->
+  <div class="card" style="padding:16px 20px;margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);">Прогрес оплат</span>
+      <span style="font-family:'Unbounded',sans-serif;font-size:16px;" id="p-prog-pct">0%</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="p-prog-fill" style="background:linear-gradient(90deg,var(--green),var(--cyan));width:0%"></div></div>
+  </div>
+
+  <!-- filter -->
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+    <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;border-radius:8px;" id="pf-all" onclick="setPayFilter('all',this)">Всі</button>
+    <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;border-radius:8px;" id="pf-pending" onclick="setPayFilter('pending',this)">Очікується</button>
+    <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;border-radius:8px;" id="pf-paid" onclick="setPayFilter('paid',this)">Оплачено</button>
+    <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;border-radius:8px;" id="pf-overdue" onclick="setPayFilter('overdue',this)">Прострочено</button>
+    <button class="btn btn-green" style="padding:6px 14px;font-size:12px;border-radius:8px;margin-left:auto;" onclick="openPayModal()">＋ Додати</button>
+  </div>
+
+  <div id="pay-list"></div>
+</div>
+
+<!-- ══════════ TAB 2: PnL ══════════ -->
+<div class="tab-panel" id="tab-pnl">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--green),#34d399);display:flex;align-items:center;justify-content:center;font-size:18px;">📊</div>
+      <div>
+        <div style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;">P&L ДАШБОРД</div>
+        <div style="font-size:11px;color:var(--muted);">Місячний розподіл</div>
       </div>
     </div>
+    <div class="month-nav">
+      <button class="mnav-btn" onclick="changePnlMonth(-1)">‹</button>
+      <span class="mnav-label" id="pnl-month-label"></span>
+      <button class="mnav-btn" onclick="changePnlMonth(1)">›</button>
+    </div>
+  </div>
+
+  <!-- saved months -->
+  <div id="pnl-months-bar" class="months-bar" style="margin-bottom:14px;"></div>
+
+  <!-- oborot/marzha -->
+  <div class="card oborot-bar" style="margin-bottom:14px;">
     <div class="inp-group">
-      <div class="inp-label">Маржа (оборот − собівартість) ₴</div>
-      <div class="inp-wrap">
-        <span class="currency">₴</span>
-        <input type="number" id="inp-marzha" placeholder="0" oninput="recalc()">
-      </div>
+      <div class="inp-label">Оборот (валовий продаж)</div>
+      <div class="inp-wrap"><span class="inp-currency">₴</span><input class="inp" type="number" id="pnl-oborot" placeholder="0" oninput="pnlRecalc()"></div>
+    </div>
+    <div class="inp-group">
+      <div class="inp-label">Маржа (оборот − собівартість)</div>
+      <div class="inp-wrap"><span class="inp-currency">₴</span><input class="inp" type="number" id="pnl-marzha" placeholder="0" oninput="pnlRecalc()"></div>
     </div>
     <div class="inp-group">
       <div class="inp-label">Маржинальність %</div>
-      <div class="inp-computed" id="marzha-pct">— %</div>
+      <div class="inp-computed" id="pnl-marz-pct">— %</div>
     </div>
   </div>
 
   <!-- KPI -->
-  <div class="kpi-row">
-    <div class="kpi k-oborot">
-      <div class="kpi-label">Оборот</div>
-      <div class="kpi-val green" id="kpi-oborot">0 ₴</div>
-      <div class="kpi-pct" id="kpi-oborot-sub">введіть дані</div>
-    </div>
-    <div class="kpi k-marzha">
-      <div class="kpi-label">Маржа</div>
-      <div class="kpi-val blue" id="kpi-marzha">0 ₴</div>
-      <div class="kpi-pct" id="kpi-marzha-pct">— % маржинальність</div>
-    </div>
-    <div class="kpi k-vitrati">
-      <div class="kpi-label">Загальні витрати</div>
-      <div class="kpi-val red" id="kpi-vitrati">0 ₴</div>
-      <div class="kpi-pct" id="kpi-vitrati-pct">— % від обороту</div>
-    </div>
-    <div class="kpi k-profit">
-      <div class="kpi-label">Чистий прибуток</div>
-      <div class="kpi-val amber" id="kpi-profit">0 ₴</div>
-      <div class="kpi-pct" id="kpi-profit-pct">маржа − витрати</div>
-    </div>
+  <div class="stats" style="margin-bottom:14px;">
+    <div class="card stat"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),#34d399)"></div>
+      <div class="stat-label">Оборот</div><div class="stat-val" style="color:var(--green)" id="pnl-kpi-ob">0₴</div><div class="stat-sub">валовий продаж</div></div>
+    <div class="card stat"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--purple)"></div>
+      <div class="stat-label">Маржа</div><div class="stat-val" style="color:var(--purple)" id="pnl-kpi-mz">0₴</div><div class="stat-sub" id="pnl-kpi-mz-pct">— %</div></div>
+    <div class="card stat"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--red)"></div>
+      <div class="stat-label">Витрати</div><div class="stat-val" style="color:var(--red)" id="pnl-kpi-vit">0₴</div><div class="stat-sub" id="pnl-kpi-vit-pct">— %</div></div>
+    <div class="card stat"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--amber)"></div>
+      <div class="stat-label">Чистий прибуток</div><div class="stat-val" id="pnl-kpi-net">0₴</div><div class="stat-sub">маржа − каси</div></div>
   </div>
 
-  <!-- ═══ КАСА РОСТУ (65%) ═══ -->
-  <div class="section" id="sec-growth">
+  <!-- Каса Росту -->
+  <div class="card" style="margin-bottom:10px;">
     <div class="sec-head" onclick="toggleSec('growth')">
-      <div class="sec-head-left">
-        <div class="sec-dot" style="background:var(--growth)"></div>
-        <span class="sec-name">Каса Росту</span>
-        <span class="sec-pct-target">ціль 65% від маржі</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--green)"></div>
+        <span class="sec-name">Каса Росту</span><span class="sec-target">ціль 65% від маржі</span>
       </div>
-      <div class="sec-head-right">
-        <span class="sec-total green" id="total-growth">0 ₴</span>
-        <span class="sec-pct-actual" id="pct-growth" style="color:var(--growth)">0%</span>
-        <span class="sec-arrow" id="arrow-growth">▼</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-family:'Unbounded',sans-serif;font-size:14px;color:var(--green)" id="pnl-total-growth">0₴</span>
+        <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.06)" id="pnl-pct-growth">0%</span>
+        <span class="sec-arrow open" id="arr-growth">▼</span>
       </div>
     </div>
     <div class="sec-body open" id="body-growth">
-
-      <!-- Обов'язкові 30% -->
-      <div class="subsec">
-        <div class="subsec-title">Обов'язкові витрати <span style="color:var(--mandatory)">ціль 30% від маржі</span> — <span id="total-mandatory" style="color:var(--mandatory)">0 ₴</span></div>
-
-        <div class="row">
-          <div class="row-name">Оренда складу <span class="row-badge badge-fixed">фіксована</span></div>
-          <div class="row-pct" id="pct-orenda">—</div>
-          <div class="row-amount" style="color:var(--mandatory)">10 500 ₴</div>
+      <div class="subsec-title">Обов'язкові <span style="color:var(--red)">30% від маржі</span> — <span id="pnl-total-mand" style="color:var(--red)">0₴</span></div>
+      <div class="row"><div class="row-name">Оренда складу <span class="badge badge-fixed">фіксована</span></div><div class="row-pct" id="pp-orenda">—</div><div class="row-amt" style="color:var(--red)">10 500₴</div></div>
+      <div class="row"><div class="row-name">Податки <span class="badge badge-fixed">фіксована</span></div><div class="row-pct" id="pp-podatky">—</div><div class="row-amt" style="color:var(--red)">4 400₴</div></div>
+      <div class="row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+        <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+          <div class="row-name">Логістика (Нова Пошта) <span class="badge badge-var">змінна</span></div>
+          <div class="row-amt" style="color:var(--red)" id="pnl-amt-log">0₴</div>
         </div>
-
-        <div class="row">
-          <div class="row-name">Податки <span class="row-badge badge-fixed">фіксована</span></div>
-          <div class="row-pct" id="pct-podatky">—</div>
-          <div class="row-amount" style="color:var(--mandatory)">4 400 ₴</div>
+        <div class="log-grid">
+          <div style="display:flex;flex-direction:column;gap:3px;"><div style="font-size:10px;color:var(--muted);text-align:center">Тиж 1</div><input class="log-inp" type="number" id="log1" placeholder="0" oninput="pnlRecalc()"></div>
+          <div style="display:flex;flex-direction:column;gap:3px;"><div style="font-size:10px;color:var(--muted);text-align:center">Тиж 2</div><input class="log-inp" type="number" id="log2" placeholder="0" oninput="pnlRecalc()"></div>
+          <div style="display:flex;flex-direction:column;gap:3px;"><div style="font-size:10px;color:var(--muted);text-align:center">Тиж 3</div><input class="log-inp" type="number" id="log3" placeholder="0" oninput="pnlRecalc()"></div>
+          <div style="display:flex;flex-direction:column;gap:3px;"><div style="font-size:10px;color:var(--muted);text-align:center">Тиж 4</div><input class="log-inp" type="number" id="log4" placeholder="0" oninput="pnlRecalc()"></div>
         </div>
-
-        <div class="row" style="flex-direction:column;align-items:flex-start;gap:6px;">
-          <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
-            <div class="row-name">Логістика (Нова Пошта) <span class="row-badge badge-var">змінна</span></div>
-            <div class="row-amount" style="color:var(--mandatory)" id="amt-logistic">0 ₴</div>
-          </div>
-          <div class="logistics-grid">
-            <div class="log-inp-wrap">
-              <div class="log-inp-label">Тиждень 1</div>
-              <input class="log-inp" type="number" id="log1" placeholder="0" oninput="recalc()">
-            </div>
-            <div class="log-inp-wrap">
-              <div class="log-inp-label">Тиждень 2</div>
-              <input class="log-inp" type="number" id="log2" placeholder="0" oninput="recalc()">
-            </div>
-            <div class="log-inp-wrap">
-              <div class="log-inp-label">Тиждень 3</div>
-              <input class="log-inp" type="number" id="log3" placeholder="0" oninput="recalc()">
-            </div>
-            <div class="log-inp-wrap">
-              <div class="log-inp-label">Тиждень 4</div>
-              <input class="log-inp" type="number" id="log4" placeholder="0" oninput="recalc()">
-            </div>
-          </div>
-          <div class="log-total">Разом за місяць: <span id="log-sum">0 ₴</span></div>
-        </div>
-
-        <div class="row">
-          <div class="row-name">ЗП дружині <span class="row-badge badge-auto">2% від обороту</span></div>
-          <div class="row-pct" id="pct-zp">—</div>
-          <div class="row-amount" style="color:var(--mandatory)" id="amt-zp">0 ₴</div>
-        </div>
-
-        <div class="row">
-          <div class="row-name">Амортизація + Паливо <span class="row-badge badge-fixed">фіксована</span></div>
-          <div class="row-pct" id="pct-fuel">—</div>
-          <div class="row-amount" style="color:var(--mandatory)">4 100 ₴</div>
-        </div>
+        <div style="text-align:right;font-size:12px;color:var(--muted);width:100%">Разом: <span id="pnl-log-sum" style="color:var(--text);font-weight:700">0₴</span></div>
       </div>
+      <div class="row"><div class="row-name">ЗП дружині <span class="badge badge-auto">2% від обороту</span></div><div class="row-pct">від об.</div><div class="row-amt" style="color:var(--red)" id="pnl-amt-zp">0₴</div></div>
+      <div class="row"><div class="row-name">Амортизація + Паливо <span class="badge badge-fixed">фіксована</span></div><div class="row-pct" id="pp-fuel">—</div><div class="row-amt" style="color:var(--red)">4 100₴</div></div>
 
-      <!-- Ріст 35% -->
-      <div class="subsec">
-        <div class="subsec-title">Витрати Росту <span style="color:var(--rising)">ціль 35% від маржі</span> — <span id="total-rising" style="color:var(--rising)">0 ₴</span></div>
-
-        <div class="row">
-          <div class="row-name">Товар <span class="row-badge badge-var">змінна</span></div>
-          <div class="row-pct" id="pct-tovar">—</div>
-          <div class="row-inp-wrap">
-            <input class="row-inp" type="number" id="inp-tovar" placeholder="0" oninput="recalc()">
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="row-name">Нові ТМ <span class="row-badge badge-var">змінна</span></div>
-          <div class="row-pct" id="pct-noviTM">—</div>
-          <div class="row-inp-wrap">
-            <input class="row-inp" type="number" id="inp-noviTM" placeholder="0" oninput="recalc()">
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="row-name">Маркетинг <span class="row-badge badge-var">змінна</span></div>
-          <div class="row-pct" id="pct-marketing">—</div>
-          <div class="row-inp-wrap">
-            <input class="row-inp" type="number" id="inp-marketing" placeholder="0" oninput="recalc()">
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="row-name">Claude AI <span class="row-badge badge-fixed">980 ₴</span></div>
-          <div class="row-pct" id="pct-claude">—</div>
-          <div class="row-amount" style="color:var(--rising)">980 ₴</div>
-        </div>
-
-        <div class="row">
-          <div class="row-name">ChatGPT <span class="row-badge badge-fixed">300 ₴</span></div>
-          <div class="row-pct" id="pct-chatgpt">—</div>
-          <div class="row-amount" style="color:var(--rising)">300 ₴</div>
-        </div>
-
-        <div class="row">
-          <div class="row-name">Microsoft Azure <span class="row-badge badge-fixed">350 ₴</span></div>
-          <div class="row-pct" id="pct-azure">—</div>
-          <div class="row-amount" style="color:var(--rising)">350 ₴</div>
-        </div>
-
-        <div class="row">
-          <div class="row-name">Telegram Premium <span class="row-badge badge-fixed">150 ₴</span></div>
-          <div class="row-pct" id="pct-tg">—</div>
-          <div class="row-amount" style="color:var(--rising)">150 ₴</div>
-        </div>
-
-        <div class="row">
-          <div class="row-name">Інші витрати росту <span class="row-badge badge-var">змінна</span></div>
-          <div class="row-pct" id="pct-other-rising">—</div>
-          <div class="row-inp-wrap">
-            <input class="row-inp" type="number" id="inp-other-rising" placeholder="0" oninput="recalc()">
-          </div>
-        </div>
-      </div>
-
-      <div class="progress-bar"><div class="progress-fill" id="bar-growth" style="background:var(--growth);width:0%"></div></div>
+      <div class="subsec-title">Витрати Росту <span style="color:var(--green)">35% від маржі</span> — <span id="pnl-total-rising" style="color:var(--green)">0₴</span></div>
+      <div class="row"><div class="row-name">Товар <span class="badge badge-var">змінна</span></div><div class="row-pct" id="pp-tovar">—</div><div><input class="row-inp inp" type="number" id="pnl-tovar" placeholder="0" oninput="pnlRecalc()"></div></div>
+      <div class="row"><div class="row-name">Нові ТМ <span class="badge badge-var">змінна</span></div><div class="row-pct" id="pp-noviTM">—</div><div><input class="row-inp inp" type="number" id="pnl-noviTM" placeholder="0" oninput="pnlRecalc()"></div></div>
+      <div class="row"><div class="row-name">Маркетинг <span class="badge badge-var">змінна</span></div><div class="row-pct" id="pp-mkt">—</div><div><input class="row-inp inp" type="number" id="pnl-mkt" placeholder="0" oninput="pnlRecalc()"></div></div>
+      <div class="row"><div class="row-name">Claude AI <span class="badge badge-fixed">980₴</span></div><div class="row-pct" id="pp-claude">—</div><div class="row-amt" style="color:var(--green)">980₴</div></div>
+      <div class="row"><div class="row-name">ChatGPT <span class="badge badge-fixed">300₴</span></div><div class="row-pct" id="pp-chatgpt">—</div><div class="row-amt" style="color:var(--green)">300₴</div></div>
+      <div class="row"><div class="row-name">Microsoft Azure <span class="badge badge-fixed">350₴</span></div><div class="row-pct" id="pp-azure">—</div><div class="row-amt" style="color:var(--green)">350₴</div></div>
+      <div class="row"><div class="row-name">Telegram Premium <span class="badge badge-fixed">150₴</span></div><div class="row-pct" id="pp-tg">—</div><div class="row-amt" style="color:var(--green)">150₴</div></div>
+      <div class="row"><div class="row-name">Інші <span class="badge badge-var">змінна</span></div><div class="row-pct" id="pp-other">—</div><div><input class="row-inp inp" type="number" id="pnl-other" placeholder="0" oninput="pnlRecalc()"></div></div>
+      <div class="prog-track" style="margin-top:12px"><div class="prog-fill" id="pnl-bar-growth" style="background:var(--green);width:0%"></div></div>
     </div>
   </div>
 
-  <!-- ═══ КАСА КОМЕРЦІЯ (25%) ═══ -->
-  <div class="section">
+  <!-- Каса Комерція -->
+  <div class="card" style="margin-bottom:10px;">
     <div class="sec-head" onclick="toggleSec('commerce')">
-      <div class="sec-head-left">
-        <div class="sec-dot" style="background:var(--commerce)"></div>
-        <span class="sec-name">Каса Комерція</span>
-        <span class="sec-pct-target">ціль 25% від маржі · накопичення на нерухомість</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--amber)"></div>
+        <span class="sec-name">Каса Комерція</span><span class="sec-target">25% від маржі · нерухомість</span>
       </div>
-      <div class="sec-head-right">
-        <span class="sec-total" style="color:var(--commerce)" id="total-commerce">0 ₴</span>
-        <span class="sec-pct-actual" id="pct-commerce" style="color:var(--commerce)">0%</span>
-        <span class="sec-arrow" id="arrow-commerce">▼</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-family:'Unbounded',sans-serif;font-size:14px;color:var(--amber)" id="pnl-total-comm">0₴</span>
+        <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--amber)">25%</span>
+        <span class="sec-arrow" id="arr-commerce">▼</span>
       </div>
     </div>
     <div class="sec-body" id="body-commerce">
-      <div class="subsec">
-        <div class="row">
-          <div class="row-name">Накопичення (25% від маржі) <span class="row-badge badge-auto">авто</span></div>
-          <div class="row-pct" id="pct-nakopchennia">25%</div>
-          <div class="row-amount" style="color:var(--commerce)" id="amt-nakopchennia">0 ₴</div>
-        </div>
-        <div style="margin-top:12px;padding:12px 14px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.15);border-radius:10px;">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Ціль: ~30 000 $ на нерухомість</div>
-          <div style="display:flex;justify-content:space-between;font-size:13px;">
-            <span>Накопичено цього місяця:</span>
-            <span style="color:var(--commerce);font-weight:700" id="commerce-month">0 ₴</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;">
-            <span>Разом накопичено (всі місяці):</span>
-            <span style="color:var(--commerce);font-weight:700" id="commerce-total-saved">0 ₴</span>
-          </div>
-        </div>
+      <div class="row"><div class="row-name">Накопичення (25% від маржі) <span class="badge badge-auto">авто</span></div><div class="row-pct">25%</div><div class="row-amt" style="color:var(--amber)" id="pnl-amt-comm">0₴</div></div>
+      <div style="margin-top:10px;padding:12px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:10px;font-size:13px;">
+        <div style="color:var(--muted);font-size:11px;margin-bottom:6px;">Ціль: ~30 000$ на нерухомість</div>
+        <div style="display:flex;justify-content:space-between;">Цього місяця: <span style="color:var(--amber);font-weight:700" id="pnl-comm-month">0₴</span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">Всього накопичено: <span style="color:var(--amber);font-weight:700" id="pnl-comm-total">0₴</span></div>
       </div>
-      <div class="progress-bar"><div class="progress-fill" id="bar-commerce" style="background:var(--commerce);width:0%"></div></div>
     </div>
   </div>
 
-  <!-- ═══ КАСА ЖИТТЯ (10%) ═══ -->
-  <div class="section">
+  <!-- Каса Життя -->
+  <div class="card" style="margin-bottom:14px;">
     <div class="sec-head" onclick="toggleSec('life')">
-      <div class="sec-head-left">
-        <div class="sec-dot" style="background:var(--life)"></div>
-        <span class="sec-name">Каса Життя</span>
-        <span class="sec-pct-target">ціль 10% від маржі</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--purple)"></div>
+        <span class="sec-name">Каса Життя</span><span class="sec-target">10% від маржі</span>
       </div>
-      <div class="sec-head-right">
-        <span class="sec-total" style="color:var(--life)" id="total-life">0 ₴</span>
-        <span class="sec-pct-actual" id="pct-life" style="color:var(--life)">0%</span>
-        <span class="sec-arrow" id="arrow-life">▼</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-family:'Unbounded',sans-serif;font-size:14px;color:var(--purple)" id="pnl-total-life">0₴</span>
+        <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.06)" id="pnl-pct-life">0%</span>
+        <span class="sec-arrow" id="arr-life">▼</span>
       </div>
     </div>
     <div class="sec-body" id="body-life">
-      <div class="subsec">
-        <div class="row">
-          <div class="row-name">Сімейний бюджет <span class="row-badge badge-fixed">фіксована</span></div>
-          <div class="row-pct" id="pct-family">—</div>
-          <div class="row-amount" style="color:var(--life)">17 000 ₴</div>
-        </div>
-        <div class="row">
-          <div class="row-name">Відпочинок <span class="row-badge badge-auto">0.35% від обороту</span></div>
-          <div class="row-pct" id="pct-vidpochynok">—</div>
-          <div class="row-amount" style="color:var(--life)" id="amt-vidpochynok">0 ₴</div>
-        </div>
-        <div class="row">
-          <div class="row-name">Резерв <span class="row-badge" style="background:rgba(148,163,184,.08);color:#64748b">пауза</span></div>
-          <div class="row-pct">—</div>
-          <div class="row-amount" style="color:#475569">0 ₴</div>
-        </div>
-        <div class="row">
-          <div class="row-name">Цілі (авто / ноутбук) <span class="row-badge" style="background:rgba(148,163,184,.08);color:#64748b">пауза</span></div>
-          <div class="row-pct">—</div>
-          <div class="row-amount" style="color:#475569">0 ₴</div>
-        </div>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" id="bar-life" style="background:var(--life);width:0%"></div></div>
+      <div class="row"><div class="row-name">Сімейний бюджет <span class="badge badge-fixed">фіксована</span></div><div class="row-pct" id="pp-family">—</div><div class="row-amt" style="color:var(--purple)">17 000₴</div></div>
+      <div class="row"><div class="row-name">Відпочинок <span class="badge badge-auto">0.35% від обороту</span></div><div class="row-pct">від об.</div><div class="row-amt" style="color:var(--purple)" id="pnl-amt-vidp">0₴</div></div>
     </div>
   </div>
 
-  <!-- SUMMARY -->
-  <div class="summary">
-    <div class="summary-title">ПІДСУМОК МІСЯЦЯ</div>
-
-    <div class="sum-row">
-      <div class="sum-name"><span class="sum-dot" style="background:var(--growth)"></span>Каса Росту (65%)</div>
-      <div class="sum-vals">
-        <span class="sum-pct" id="sum-pct-growth">0%</span>
-        <span class="sum-amt" style="color:var(--growth)" id="sum-growth">0 ₴</span>
-      </div>
-    </div>
-    <div class="sum-row" style="padding-left:20px;">
-      <div class="sum-name" style="font-size:12px;color:var(--muted)">· Обов'язкові (30%)</div>
-      <div class="sum-vals">
-        <span class="sum-pct" id="sum-pct-mand">0%</span>
-        <span class="sum-amt" style="color:var(--mandatory);font-size:13px" id="sum-mandatory">0 ₴</span>
-      </div>
-    </div>
-    <div class="sum-row" style="padding-left:20px;">
-      <div class="sum-name" style="font-size:12px;color:var(--muted)">· Ріст (35%)</div>
-      <div class="sum-vals">
-        <span class="sum-pct" id="sum-pct-ris">0%</span>
-        <span class="sum-amt" style="color:var(--rising);font-size:13px" id="sum-rising">0 ₴</span>
-      </div>
-    </div>
-    <div class="sum-row">
-      <div class="sum-name"><span class="sum-dot" style="background:var(--commerce)"></span>Каса Комерція (25%)</div>
-      <div class="sum-vals">
-        <span class="sum-pct" id="sum-pct-com">0%</span>
-        <span class="sum-amt" style="color:var(--commerce)" id="sum-commerce">0 ₴</span>
-      </div>
-    </div>
-    <div class="sum-row">
-      <div class="sum-name"><span class="sum-dot" style="background:var(--life)"></span>Каса Життя (10%)</div>
-      <div class="sum-vals">
-        <span class="sum-pct" id="sum-pct-lif">0%</span>
-        <span class="sum-amt" style="color:var(--life)" id="sum-life">0 ₴</span>
-      </div>
-    </div>
-
-    <div class="sum-row total">
-      <div class="sum-name" style="font-weight:700;font-size:14px;">Разом витрат</div>
-      <div class="sum-vals">
-        <span class="sum-pct" id="sum-pct-all">0%</span>
-        <span class="sum-amt" style="font-size:16px" id="sum-all">0 ₴</span>
-      </div>
-    </div>
-    <div class="sum-row total" style="background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15);">
-      <div class="sum-name" style="font-weight:700;font-size:14px;color:var(--growth)">💰 Чистий прибуток</div>
-      <div class="sum-vals">
-        <span class="sum-pct" id="sum-pct-net"></span>
-        <span class="sum-amt" style="font-size:18px;color:var(--growth)" id="sum-net">0 ₴</span>
-      </div>
-    </div>
-
-    <!-- Donut chart -->
-    <div class="donut-wrap" style="margin-top:20px;">
-      <svg class="donut-svg" width="120" height="120" viewBox="0 0 120 120" id="donut-svg">
-        <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="16"/>
-      </svg>
-      <div class="donut-legend" id="donut-legend"></div>
-    </div>
+  <!-- Summary -->
+  <div class="card" style="padding:20px;margin-bottom:14px;">
+    <div class="section-title">Підсумок місяця</div>
+    <div class="sum-row"><div class="sum-name"><span class="sum-dot" style="background:var(--green)"></span>Каса Росту (65%)</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-gr">0%</span><span class="sum-amt" style="color:var(--green)" id="ss-growth">0₴</span></div></div>
+    <div class="sum-row" style="padding-left:16px;"><div class="sum-name" style="font-size:12px;color:var(--muted)">· Обов'язкові</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-mn">0%</span><span class="sum-amt" style="color:var(--red);font-size:13px" id="ss-mand">0₴</span></div></div>
+    <div class="sum-row" style="padding-left:16px;"><div class="sum-name" style="font-size:12px;color:var(--muted)">· Ріст</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-rs">0%</span><span class="sum-amt" style="color:var(--green);font-size:13px" id="ss-rising">0₴</span></div></div>
+    <div class="sum-row"><div class="sum-name"><span class="sum-dot" style="background:var(--amber)"></span>Каса Комерція (25%)</div><div class="sum-vals"><span class="sum-pct">25%</span><span class="sum-amt" style="color:var(--amber)" id="ss-comm">0₴</span></div></div>
+    <div class="sum-row"><div class="sum-name"><span class="sum-dot" style="background:var(--purple)"></span>Каса Життя (10%)</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-lf">0%</span><span class="sum-amt" style="color:var(--purple)" id="ss-life">0₴</span></div></div>
+    <div class="sum-row sum-total"><div style="font-weight:700;font-size:14px;">Разом витрат</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-all">0%</span><span class="sum-amt" id="ss-all">0₴</span></div></div>
+    <div class="sum-row sum-total" style="background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15);"><div style="font-weight:700;font-size:14px;color:var(--green)">💰 Чистий прибуток</div><div class="sum-vals"><span class="sum-amt" style="font-size:18px;color:var(--green)" id="ss-net">0₴</span></div></div>
+    <div class="donut-wrap"><svg id="donut-svg" width="110" height="110" viewBox="0 0 110 110"><circle cx="55" cy="55" r="44" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="14"/></svg><div id="donut-legend"></div></div>
   </div>
 
-  <div class="save-row">
-    <button class="btn btn-ghost" onclick="resetMonth()">🗑 Скинути місяць</button>
-    <button class="btn btn-ghost" onclick="copyToClipboard()">📋 Копіювати дані</button>
-    <button class="btn btn-ghost" onclick="openImportModal()">📥 Вставити дані</button>
-    <button class="btn btn-save" onclick="saveData()">💾 Зберегти</button>
+  <!-- buttons -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:12px;">
+    <button class="btn btn-ghost" onclick="pnlReset()">🗑 Скинути</button>
+    <button class="btn btn-ghost" onclick="copyData()">📋 Копіювати</button>
+    <button class="btn btn-ghost" onclick="openImport()">📥 Вставити</button>
+    <button class="btn btn-green" onclick="pnlSave()">💾 Зберегти</button>
   </div>
-
-  <!-- Sync hint -->
-  <div style="margin-top:12px;padding:14px 16px;background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.12);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.8;">
-    📱→💻 <strong style="color:var(--text)">Синхронізація через Telegram:</strong><br>
-    <span style="color:var(--growth)">1.</span> Збережи дані → натисни <strong style="color:var(--growth)">📋 Копіювати дані</strong><br>
-    <span style="color:var(--growth)">2.</span> Вставляй у <strong>Telegram → Збережені повідомлення</strong> (надішли собі)<br>
-    <span style="color:var(--growth)">3.</span> На іншому пристрої скопіюй текст з Telegram<br>
-    <span style="color:var(--growth)">4.</span> Натисни <strong style="color:var(--growth)">📥 Вставити дані</strong> → вставляй → OK
+  <div style="padding:12px 14px;background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.1);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.8;">
+    📱→💻 <b style="color:var(--text)">Синхронізація:</b> Зберегти → 📋 Копіювати → Telegram Збережене → на іншому пристрої 📥 Вставити
   </div>
-
-  <!-- Import modal -->
-  <div id="import-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:#1a1a26;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:28px;width:100%;max-width:500px;box-shadow:0 40px 80px rgba(0,0,0,.6);">
-      <div style="font-family:'Unbounded',sans-serif;font-size:18px;margin-bottom:16px;">📥 Вставити дані</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Скопіюй текст з Telegram і встав сюди:</div>
-      <textarea id="import-textarea" style="width:100%;height:140px;background:#1f1f2e;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:var(--text);font-family:monospace;font-size:12px;padding:12px;outline:none;resize:none;" placeholder='{"2025-3":{...}}'></textarea>
-      <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end;">
-        <button class="btn btn-ghost" onclick="closeImportModal()">Скасувати</button>
-        <button class="btn btn-save" onclick="importFromText()">✅ Імпортувати</button>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<div id="toast">✅ Збережено!</div>
+<!-- ══════════ TAB 3: CLIENTS ══════════ -->
+<div class="tab-panel" id="tab-clients">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-size:18px;">👥</div>
+      <div>
+        <div style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;">КЛІЄНТИ</div>
+        <div style="font-size:11px;color:var(--muted);">Таблиця мотивації</div>
+      </div>
+    </div>
+    <div class="month-nav">
+      <button class="mnav-btn" onclick="changeCliMonth(-1)">‹</button>
+      <span class="mnav-label" id="cli-month-label"></span>
+      <button class="mnav-btn" onclick="changeCliMonth(1)">›</button>
+    </div>
+  </div>
+
+  <!-- client stats -->
+  <div class="stats" style="margin-bottom:14px;">
+    <div class="card stat"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--cyan)"></div>
+      <div class="stat-label">Клієнтів</div><div class="stat-val" style="color:var(--cyan)" id="cli-count">0</div><div class="stat-sub">активних</div></div>
+    <div class="card stat"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--green)"></div>
+      <div class="stat-label">Оборот місяця</div><div class="stat-val" style="color:var(--green)" id="cli-total">0₴</div><div class="stat-sub">всі клієнти</div></div>
+    <div class="card stat"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--amber)"></div>
+      <div class="stat-label">Близько до порогу</div><div class="stat-val" style="color:var(--amber)" id="cli-near">0</div><div class="stat-sub">клієнтів</div></div>
+    <div class="card stat"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--red)"></div>
+      <div class="stat-label">EXCLUSIVE</div><div class="stat-val" style="color:var(--red)" id="cli-excl">0</div><div class="stat-sub">клієнтів</div></div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <button class="btn btn-green" style="padding:8px 16px;font-size:12px;" onclick="openAddClient()">＋ Клієнт</button>
+    <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="broadcastViber('15')">📱 Всім 15-го</button>
+    <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="broadcastViber('27')">📱 Близьким 27-го</button>
+    <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="broadcastViber('30')">📱 Всім 30-го</button>
+    <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="document.getElementById('excel-inp').click()">📊 З Excel (1С)</button>
+    <input type="file" id="excel-inp" accept=".xlsx,.xls,.csv" style="display:none" onchange="importFromExcel(event)">
+    <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" id="notif-btn" onclick="toggleNotifications()">🔔 Сповіщення</button>
+  </div>
+
+  <!-- Excel import hint -->
+  <div id="excel-hint" style="display:none;margin-bottom:12px;padding:12px 14px;background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.15);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.7;">
+    📊 <b style="color:var(--text)">Як вивантажити з 1С:</b><br>
+    1. В 1С відкрий <b>Звіти → Продажі → Продажі по контрагентах</b><br>
+    2. Встанови період (поточний місяць)<br>
+    3. Натисни <b>Зберегти → Excel</b><br>
+    4. Завантаж файл тут — суми підтягнуться автоматично
+    <button onclick="document.getElementById('excel-hint').style.display='none'" style="float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;">✕</button>
+  </div>
+
+  <div id="cli-list"></div>
+</div>
+
+<!-- BROADCAST MODAL -->
+<div class="overlay" id="broadcast-overlay">
+  <div class="modal" style="max-width:480px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div class="modal-title" id="bcast-title">📱 Розсилка</div>
+      <span style="font-size:12px;color:var(--muted)" id="bcast-count"></span>
+    </div>
+    <div class="prog-track" style="margin-bottom:14px;"><div class="prog-fill" id="bcast-progress" style="background:var(--cyan);width:0%"></div></div>
+    <div style="font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:8px;" id="bcast-name"></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Натисни 📋 Копіювати → вставляй у Viber → переходь до наступного</div>
+    <textarea id="bcast-msg" class="inp" style="height:160px;font-size:13px;resize:none;line-height:1.6;" readonly></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeBroadcast()">✕ Закрити</button>
+      <button class="btn btn-ghost" onclick="bcastSkip()">→ Пропустити</button>
+      <button class="btn btn-green" onclick="bcastCopy()">📋 Копіювати</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="overlay" id="import-overlay">
+  <div class="modal">
+    <div class="modal-title">📥 Вставити дані</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Скопіюй текст з Telegram і встав сюди:</div>
+    <textarea id="import-ta" class="inp" style="height:150px;font-size:11px;font-family:monospace;resize:none;" placeholder="Вставте текст..."></textarea>
+    <div id="import-err" style="display:none;margin-top:8px;padding:8px 12px;background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.3);border-radius:8px;font-size:12px;color:var(--red);"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeImport()">Скасувати</button>
+      <button class="btn btn-green" onclick="doImport()">✅ Імпортувати</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PAYMENT MODAL -->
+<div class="overlay" id="pay-modal">
+  <div class="modal" style="max-height:90vh;overflow-y:auto;">
+    <div class="modal-title" id="pay-modal-title">Новий платіж</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="inp-group"><div class="inp-label">Назва</div><input class="inp" id="pm-name" placeholder="Claude AI"></div>
+      <div class="inp-group"><div class="inp-label">Сума ₴</div><input class="inp" type="number" id="pm-amount" placeholder="0"></div>
+      <div class="inp-group"><div class="inp-label">День (1-31)</div><input class="inp" type="number" id="pm-day" placeholder="15" min="1" max="31"></div>
+      <div class="inp-group"><div class="inp-label">Категорія</div>
+        <select class="inp" id="pm-cat">
+          <option>🏠 Житло</option><option>💡 Комуналка</option><option>📱 Зв'язок</option>
+          <option>🎵 Підписки</option><option>💳 Кредит</option><option>💸 Податки</option>
+          <option>🚗 Авто</option><option>📦 Інше</option>
+        </select>
+      </div>
+      <div class="inp-group"><div class="inp-label">Нагадати за (днів)</div>
+        <select class="inp" id="pm-remind"><option value="1">За 1 день</option><option value="2">За 2 дні</option><option value="3">За 3 дні</option><option value="5">За 5 днів</option><option value="0">Без нагадування</option></select>
+      </div>
+      <div class="inp-group"><div class="inp-label">Тип</div>
+        <select class="inp" id="pm-type"><option value="expense">💸 Витрата</option><option value="income">💚 Дохід</option><option value="reminder">📌 Нагадування</option></select>
+      </div>
+      <div class="inp-group" style="grid-column:1/-1"><div class="inp-label">Нотатки</div><input class="inp" id="pm-notes" placeholder="..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePayModal()">Скасувати</button>
+      <button class="btn btn-green" onclick="savePayment()">Зберегти</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CLIENT MODAL -->
+<div class="overlay" id="cli-modal">
+  <div class="modal">
+    <div class="modal-title">Новий клієнт</div>
+    <div class="inp-group" style="margin-bottom:12px;"><div class="inp-label">Прізвище / Назва</div><input class="inp" id="cm-name" placeholder="Немеш"></div>
+    <div class="inp-group"><div class="inp-label">Viber номер (необов'язково)</div><input class="inp" id="cm-phone" placeholder="+380..."></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAddClient()">Скасувати</button>
+      <button class="btn btn-green" onclick="saveClient()">Додати</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <script>
-// ════ STATE ════
-const MONTHS = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
-let curYear = new Date().getFullYear();
-let curMonth = new Date().getMonth();
+const MONTHS=['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
+const now=new Date();
+const FIXED={orenda:10500,podatky:4400,fuel:4100,claude:980,chatgpt:300,azure:350,tg:150};
 
-// Fixed costs
-const FIXED = {
-  orenda: 10500, podatky: 4400, fuel: 4100,
-  claude: 980, chatgpt: 300, azure: 350, tg: 150
+// ── STORAGE ──
+const SK='avanti_v1';
+function load(){try{return JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){return{};}}
+function save(d){try{localStorage.setItem(SK,JSON.stringify(d));}catch(e){}}
+const BUILT_IN={
+  pnl:{"2026-3":{oborot:1001547,marzha:186287,log1:5981,log2:4794,log3:2814,log4:4725,tovar:0,noviTM:0,mkt:0,other:0}},
+  payments:[
+    {id:'p1',name:'Підписка Claude',amount:980,day:4,cat:'🎵 Підписки',remind:2,type:'expense',status:'pending',notes:'Claude AI'},
+    {id:'p2',name:'Microsoft Azure',amount:350,day:9,cat:'📱 Зв\'язок',remind:2,type:'expense',status:'pending',notes:'Хмарний сервіс'},
+    {id:'p3',name:'Оренда складу',amount:10500,day:10,cat:'🏠 Житло',remind:3,type:'expense',status:'pending',notes:''},
+    {id:'p4',name:'ChatGPT',amount:300,day:10,cat:'🎵 Підписки',remind:2,type:'expense',status:'pending',notes:''},
+    {id:'p5',name:'Податки',amount:4400,day:13,cat:'💸 Податки',remind:3,type:'expense',status:'pending',notes:''},
+    {id:'p6',name:'Оренда квартири Мукачево',amount:17600,day:15,cat:'🏠 Житло',remind:2,type:'income',status:'pending',notes:'Орендар'},
+    {id:'p7',name:'Комунальні від орендаря',amount:3000,day:16,cat:'💡 Комуналка',remind:1,type:'income',status:'pending',notes:'Мукачево'},
+    {id:'p8',name:'Telegram Premium',amount:150,day:17,cat:'🎵 Підписки',remind:1,type:'expense',status:'pending',notes:''},
+    {id:'p9',name:'Показники лічильників',amount:0,day:30,cat:'📦 Інше',remind:3,type:'reminder',status:'pending',notes:'Фото від орендаря'},
+  ],
+  clients:[
+    {id:'c1',name:'Немеш',phone:'',group:'g1'},
+    {id:'c1b',name:'ФОП Петрище',phone:'',group:'g1'},
+    {id:'c2',name:'Рущак',phone:''},
+    {id:'c3',name:'Лендел',phone:''},
+    {id:'c4',name:'Білак',phone:''},
+    {id:'c5',name:'Костак',phone:''},
+    {id:'c6',name:'Козушко',phone:''},
+    {id:'c7',name:'Цибарь',phone:''},
+    {id:'c8',name:'Крьока',phone:''},
+    {id:'c9',name:'Папарига',phone:''},
+    {id:'c10',name:'Гоєр',phone:''},
+    {id:'c11',name:'Думен',phone:''},
+    {id:'c12',name:'Морозько Олександр',phone:''},
+    {id:'c13',name:'Сятиня',phone:''},
+    {id:'c14',name:'Сабов',phone:''},
+    {id:'c15',name:'Кричфалушій',phone:''},
+    {id:'c16',name:'Прислупська',phone:''},
+    {id:'c17',name:'Худенко',phone:''},
+    {id:'c18',name:'Іжакевич',phone:''},
+    {id:'c19',name:'ФОП Бісун',phone:'',group:'g2'},
+    {id:'c19b',name:'ФОП Холод',phone:'',group:'g2'},
+    {id:'c19c',name:'ФОП Копос',phone:'',group:'g2'},
+  ],
 };
+let DB=(function(){const s=load();return{pnl:{...BUILT_IN.pnl,...(s.pnl||{})},payments:s.payments||BUILT_IN.payments,clients:s.clients||BUILT_IN.clients,cliData:s.cliData||{}};})();
+function saveDB(){save(DB);}
 
-// ════ STORAGE (з fallback якщо localStorage заблокований) ════
-const STORE_KEY = 'pnl_v1';
-
-function storageGet(){
-  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }
-  catch(e){ return window._pnlFallback || {}; }
-}
-function storageSet(data){
-  window._pnlFallback = data; // завжди зберігаємо в пам'яті
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); return true; }
-  catch(e){ return false; }
+// ── TABS ──
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
 }
 
-let allData = storageGet();
+// ── TOAST ──
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
-function monthKey(){ return `${curYear}-${curMonth}`; }
+// ══════════ PAYMENTS ══════════
+let payMonth=now.getMonth(), payYear=now.getFullYear(), payFilter='all', payEditId=null;
 
-function getMonth(){
-  return allData[monthKey()] || {
-    oborot:0, marzha:0,
-    log1:0,log2:0,log3:0,log4:0,
-    tovar:0, noviTM:0, marketing:0, otherRising:0
-  };
+function changePayMonth(d){payMonth+=d;if(payMonth>11){payMonth=0;payYear++;}if(payMonth<0){payMonth=11;payYear--;}renderPayments();}
+function setPayFilter(f,btn){payFilter=f;document.querySelectorAll('[id^="pf-"]').forEach(b=>{b.style.background='';b.style.color='';});btn.style.background='rgba(74,222,128,.15)';btn.style.color='var(--green)';renderPayments();}
+
+function payStatus(p){
+  const today=new Date(),td=today.getDate();
+  if(p.status==='paid') return 'paid';
+  if(payMonth===today.getMonth()&&payYear===today.getFullYear()&&p.day<td&&p.type!=='income'&&p.type!=='reminder') return 'overdue';
+  return p.status||'pending';
 }
 
-function saveData(){
-  allData[monthKey()] = {
-    oborot: n('inp-oborot'), marzha: n('inp-marzha'),
-    log1: n('log1'), log2: n('log2'), log3: n('log3'), log4: n('log4'),
-    tovar: n('inp-tovar'), noviTM: n('inp-noviTM'),
-    marketing: n('inp-marketing'), otherRising: n('inp-other-rising')
-  };
-  const ok = storageSet(allData);
-  showToast(ok ? '💾 Збережено!' : '💾 Збережено в пам\'яті (відкрий файл через браузер для постійного збереження)');
+function renderPayments(){
+  document.getElementById('pay-month-label').textContent=MONTHS[payMonth]+' '+payYear;
+  const today=new Date(),td=today.getDate(),isCur=payMonth===today.getMonth()&&payYear===today.getFullYear();
+  let list=DB.payments.filter(p=>payFilter==='all'||payStatus(p)===payFilter);
+  list.sort((a,b)=>a.day-b.day);
+
+  const expenses=DB.payments.filter(p=>p.type==='expense');
+  const incomes=DB.payments.filter(p=>p.type==='income');
+  const paid=DB.payments.filter(p=>p.status==='paid'&&p.type!=='reminder');
+  const over=DB.payments.filter(p=>payStatus(p)==='overdue');
+  const pend=DB.payments.filter(p=>payStatus(p)==='pending'&&p.type!=='reminder');
+
+  document.getElementById('p-stat-total').textContent=fmt(expenses.reduce((s,p)=>s+p.amount,0));
+  document.getElementById('p-stat-count').textContent=expenses.length+' витрат';
+  document.getElementById('p-stat-paid').textContent=fmt(paid.reduce((s,p)=>s+p.amount,0));
+  document.getElementById('p-stat-paid-c').textContent=paid.length+' платежів';
+  document.getElementById('p-stat-pend').textContent=fmt(pend.reduce((s,p)=>s+p.amount,0));
+  document.getElementById('p-stat-pend-c').textContent=pend.length+' платежів';
+  document.getElementById('p-stat-over').textContent=fmt(over.reduce((s,p)=>s+p.amount,0));
+  document.getElementById('p-stat-over-c').textContent=over.length+' платежів';
+
+  const act=DB.payments.filter(p=>p.type!=='reminder');
+  const pct=act.length?Math.round(paid.length/act.length*100):0;
+  document.getElementById('p-prog-pct').textContent=pct+'%';
+  document.getElementById('p-prog-fill').style.width=pct+'%';
+
+  const sl={paid:'✓ Оплачено',pending:'⏳ Очікується',overdue:'⚠ Прострочено'};
+  document.getElementById('pay-list').innerHTML=list.map((p,i)=>{
+    const st=payStatus(p);
+    const dLeft=isCur?p.day-td:0;
+    const isToday=isCur&&p.day===td;
+    const isSoon=isCur&&dLeft>0&&dLeft<=(p.remind||1);
+    const isOvD=isCur&&p.day<td&&st!=='paid';
+    const dc=isToday?'day-today':isOvD?'day-overdue-d':isSoon?'day-soon':'day-normal';
+    let amtHtml='';
+    if(p.type==='income') amtHtml=`<span style="color:var(--green)">+${fmt(p.amount)}</span>`;
+    else if(p.type==='reminder') amtHtml=`<span style="color:var(--muted)">📌</span>`;
+    else amtHtml=`<span style="color:var(--red)">-${fmt(p.amount)}</span>`;
+    let border='';
+    if(p.type==='income') border=';border-left:3px solid var(--green)';
+    if(p.type==='reminder') border=';border-left:3px solid #606080';
+    return `<div class="pay-card" style="animation-delay:${i*.04}s${border}">
+      <div class="pay-card-top">
+        <span class="day-badge ${dc}">${p.day}</span>
+        <span class="pay-card-name">${p.name}${p.type==='income'?'<span style="font-size:10px;background:rgba(74,222,128,.15);color:var(--green);padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:700">↑ ДОХІД</span>':''}</span>
+        <span class="pay-card-amount">${amtHtml}</span>
+      </div>
+      <div class="pay-card-meta">
+        <span class="badge badge-fixed">${p.cat}</span>
+        ${p.type!=='reminder'?`<span class="pill pill-${st}" onclick="cyclePayStatus('${p.id}')">${sl[st]||'⏳'}</span>`:''}
+        ${p.remind>0?`<span style="font-size:11px;background:rgba(252,185,92,.1);color:var(--amber);padding:2px 8px;border-radius:6px;font-weight:700">🔔 за ${p.remind}д</span>`:''}
+      </div>
+      ${p.notes?`<div style="font-size:12px;color:var(--muted);margin-top:6px">${p.notes}</div>`:''}
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="btn btn-ghost" style="flex:1;padding:6px;font-size:12px" onclick="editPay('${p.id}')">✎ Редагувати</button>
+        <button class="btn btn-ghost" style="flex:1;padding:6px;font-size:12px;color:var(--red)" onclick="deletePay('${p.id}')">✕ Видалити</button>
+      </div>
+    </div>`;
+  }).join('')||'<div style="text-align:center;padding:40px;color:var(--muted)">Немає платежів</div>';
 }
 
-function loadIntoForm(){
-  const d = getMonth();
-  sv('inp-oborot', d.oborot||'');
-  sv('inp-marzha',  d.marzha||'');
-  sv('log1',d.log1||''); sv('log2',d.log2||''); sv('log3',d.log3||''); sv('log4',d.log4||'');
-  sv('inp-tovar',d.tovar||''); sv('inp-noviTM',d.noviTM||'');
-  sv('inp-marketing',d.marketing||''); sv('inp-other-rising',d.otherRising||'');
-  recalc();
+function cyclePayStatus(id){
+  const p=DB.payments.find(x=>x.id===id);if(!p)return;
+  const c={pending:'paid',paid:'overdue',overdue:'pending'};
+  p.status=c[p.status]||'pending';saveDB();renderPayments();
+}
+function openPayModal(){payEditId=null;document.getElementById('pay-modal-title').textContent='Новий платіж';['pm-name','pm-notes'].forEach(id=>document.getElementById(id).value='');['pm-amount','pm-day'].forEach(id=>document.getElementById(id).value='');document.getElementById('pay-modal').classList.add('open');}
+function closePayModal(){document.getElementById('pay-modal').classList.remove('open');}
+function editPay(id){
+  const p=DB.payments.find(x=>x.id===id);if(!p)return;
+  payEditId=id;document.getElementById('pay-modal-title').textContent='Редагувати';
+  document.getElementById('pm-name').value=p.name;document.getElementById('pm-amount').value=p.amount;
+  document.getElementById('pm-day').value=p.day;document.getElementById('pm-cat').value=p.cat;
+  document.getElementById('pm-remind').value=p.remind;document.getElementById('pm-type').value=p.type;
+  document.getElementById('pm-notes').value=p.notes||'';
+  document.getElementById('pay-modal').classList.add('open');
+}
+function deletePay(id){if(!confirm('Видалити?'))return;DB.payments=DB.payments.filter(x=>x.id!==id);saveDB();renderPayments();}
+function savePayment(){
+  const name=document.getElementById('pm-name').value.trim();
+  const amount=parseFloat(document.getElementById('pm-amount').value)||0;
+  const day=parseInt(document.getElementById('pm-day').value)||1;
+  if(!name){toast('❌ Введіть назву');return;}
+  const d={id:payEditId||uid(),name,amount,day,cat:document.getElementById('pm-cat').value,remind:parseInt(document.getElementById('pm-remind').value),type:document.getElementById('pm-type').value,status:'pending',notes:document.getElementById('pm-notes').value.trim()};
+  if(payEditId){const i=DB.payments.findIndex(x=>x.id===payEditId);DB.payments[i]=d;}
+  else DB.payments.push(d);
+  saveDB();closePayModal();renderPayments();toast('✅ Збережено');
 }
 
-function resetMonth(){
-  if(!confirm(`Скинути всі дані за ${MONTHS[curMonth]} ${curYear}?`)) return;
-  delete allData[monthKey()];
-  storageSet(allData);
-  loadIntoForm();
-  showToast('🗑 Місяць скинуто');
+// ══════════ PnL ══════════
+let pnlMonth=now.getMonth(), pnlYear=now.getFullYear();
+(function(){const k=Object.keys(DB.pnl).sort();if(k.length){const[y,m]=k[k.length-1].split('-').map(Number);pnlYear=y;pnlMonth=m;}})();
+
+function pnlKey(){return `${pnlYear}-${pnlMonth}`;}
+function getPnl(){return DB.pnl[pnlKey()]||{oborot:0,marzha:0,log1:0,log2:0,log3:0,log4:0,tovar:0,noviTM:0,mkt:0,other:0};}
+
+function changePnlMonth(d){pnlMonth+=d;if(pnlMonth>11){pnlMonth=0;pnlYear++;}if(pnlMonth<0){pnlMonth=11;pnlYear--;}loadPnl();}
+
+function loadPnl(){
+  document.getElementById('pnl-month-label').textContent=MONTHS[pnlMonth]+' '+pnlYear;
+  const d=getPnl();
+  sv('pnl-oborot',d.oborot);sv('pnl-marzha',d.marzha);
+  sv('log1',d.log1);sv('log2',d.log2);sv('log3',d.log3);sv('log4',d.log4);
+  sv('pnl-tovar',d.tovar);sv('pnl-noviTM',d.noviTM);sv('pnl-mkt',d.mkt);sv('pnl-other',d.other);
+  pnlRecalc();renderPnlMonths();
 }
 
-// ════ CLIPBOARD SYNC ════
-async function copyToClipboard(){
-  saveData(); // спочатку зберігаємо поточний місяць
-  const json = JSON.stringify(allData);
-  try {
-    await navigator.clipboard.writeText(json);
-    showToast('📋 Скопійовано! Вставляй у Telegram');
-  } catch(e){
-    // fallback — показуємо textarea для ручного копіювання
-    document.getElementById('import-textarea').value = json;
-    openImportModal();
-    showToast('📋 Скопіюй текст вручну');
-  }
+function pnlSave(){
+  DB.pnl[pnlKey()]={oborot:nv('pnl-oborot'),marzha:nv('pnl-marzha'),log1:nv('log1'),log2:nv('log2'),log3:nv('log3'),log4:nv('log4'),tovar:nv('pnl-tovar'),noviTM:nv('pnl-noviTM'),mkt:nv('pnl-mkt'),other:nv('pnl-other')};
+  saveDB();renderPnlMonths();toast('💾 Збережено!');
 }
 
-function openImportModal(){
-  const ov = document.getElementById('import-overlay');
-  ov.style.display = 'flex';
-}
-function closeImportModal(){
-  document.getElementById('import-overlay').style.display = 'none';
-  document.getElementById('import-textarea').value = '';
-}
+function pnlReset(){if(!confirm(`Скинути ${MONTHS[pnlMonth]} ${pnlYear}?`))return;delete DB.pnl[pnlKey()];saveDB();loadPnl();toast('🗑 Скинуто');}
 
-function importFromText(){
-  const text = document.getElementById('import-textarea').value.trim();
-  if(!text){ showToast('❌ Порожньо — вставте дані'); return; }
-  try {
-    const imported = JSON.parse(text);
-    const count = Object.keys(imported).length;
-    if(!confirm(`Імпортувати ${count} місяць(ів)? Дані будуть об'єднані з поточними.`)) return;
-    allData = {...allData, ...imported};
-    storageSet(allData);
-    loadIntoForm();
-    closeImportModal();
-    showToast(`✅ Імпортовано ${count} місяць(ів)!`);
-  } catch(e){
-    showToast('❌ Невірний формат. Скопіюй повністю.');
-  }
-}
+function pnlRecalc(){
+  const ob=nv('pnl-oborot'),mz=nv('pnl-marzha');
+  const log=nv('log1')+nv('log2')+nv('log3')+nv('log4');
+  const zp=ob*.02,vidp=ob*.0035,comm=mz*.25;
+  const tovar=nv('pnl-tovar'),noviTM=nv('pnl-noviTM'),mkt=nv('pnl-mkt'),other=nv('pnl-other');
+  const rising=tovar+noviTM+mkt+FIXED.claude+FIXED.chatgpt+FIXED.azure+FIXED.tg+other;
+  const mandatory=FIXED.orenda+FIXED.podatky+FIXED.fuel+log+zp;
+  const growth=mandatory+rising;
+  const life=17000+vidp;
+  const net=mz-growth-comm-life;
 
-// ════ RECALC ════
-function recalc(){
-  const ob = n('inp-oborot');
-  const mz = n('inp-marzha');
+  document.getElementById('pnl-log-sum').textContent=fmt(log);
+  document.getElementById('pnl-amt-log').textContent=fmt(log);
+  document.getElementById('pnl-amt-zp').textContent=fmt(zp);
+  document.getElementById('pnl-amt-vidp').textContent=fmt(vidp);
+  document.getElementById('pnl-amt-comm').textContent=fmt(comm);
+  document.getElementById('pnl-comm-month').textContent=fmt(comm);
+  document.getElementById('pnl-total-mand').textContent=fmt(mandatory);
+  document.getElementById('pnl-total-rising').textContent=fmt(rising);
+  document.getElementById('pnl-total-growth').textContent=fmt(growth);
+  document.getElementById('pnl-total-comm').textContent=fmt(comm);
+  document.getElementById('pnl-total-life').textContent=fmt(life);
+  document.getElementById('pnl-marz-pct').textContent=ob>0?(mz/ob*100).toFixed(1)+'%':'— %';
+  document.getElementById('pnl-kpi-ob').textContent=fmt(ob);
+  document.getElementById('pnl-kpi-mz').textContent=fmt(mz);
+  document.getElementById('pnl-kpi-mz-pct').textContent=ob>0?(mz/ob*100).toFixed(1)+'% від об.':'—';
+  document.getElementById('pnl-kpi-vit').textContent=fmt(growth+life);
+  document.getElementById('pnl-kpi-vit-pct').textContent=mz>0?((growth+life)/mz*100).toFixed(1)+'% від маржі':'—';
+  const ne=document.getElementById('pnl-kpi-net');ne.textContent=fmt(net);ne.style.color=net>=0?'var(--amber)':'var(--red)';
 
-  // logistics
-  const log = n('log1')+n('log2')+n('log3')+n('log4');
-  set('log-sum', fmt(log));
-  set('amt-logistic', fmt(log));
+  const base=mz>0?mz:1;
+  const pcts=[[pp('pp-orenda'),FIXED.orenda],[pp('pp-podatky'),FIXED.podatky],[pp('pp-fuel'),FIXED.fuel],[pp('pp-tovar'),tovar],[pp('pp-noviTM'),noviTM],[pp('pp-mkt'),mkt],[pp('pp-claude'),FIXED.claude],[pp('pp-chatgpt'),FIXED.chatgpt],[pp('pp-azure'),FIXED.azure],[pp('pp-tg'),FIXED.tg],[pp('pp-other'),other],[pp('pp-family'),17000]];
+  if(mz>0) pcts.forEach(([el,v])=>{if(el)el.textContent=(v/base*100).toFixed(1)+'%';});
+  else pcts.forEach(([el])=>{if(el)el.textContent='—';});
 
-  // ЗП і відпочинок — від ОБОРОТУ
-  const zp      = ob * 0.02;
-  const vidpoch = ob * 0.0035;
-  set('amt-zp', fmt(zp));
-  set('amt-vidpochynok', fmt(vidpoch));
-
-  // Каса Комерція — 25% від МАРЖІ
-  const commerce = mz * 0.25;
-  set('amt-nakopchennia', fmt(commerce));
-  set('commerce-month', fmt(commerce));
-
-  // mandatory (входить у 65% від маржі)
-  const mandatory = FIXED.orenda + FIXED.podatky + FIXED.fuel + log + zp;
-  set('total-mandatory', fmt(mandatory));
-
-  // rising
-  const tovar  = n('inp-tovar');
-  const noviTM = n('inp-noviTM');
-  const mkt    = n('inp-marketing');
-  const otherR = n('inp-other-rising');
-  const rising = tovar + noviTM + mkt + FIXED.claude + FIXED.chatgpt + FIXED.azure + FIXED.tg + otherR;
-  set('total-rising', fmt(rising));
-
-  // Каса Росту — фактичні витрати (ціль 65% від маржі)
-  const growth = mandatory + rising;
-  set('total-growth', fmt(growth));
-
-  // Каса Життя — 10% від маржі (фактично: фіксовані + відпочинок)
-  const family = 17000;
-  const life   = family + vidpoch;
-  set('total-life', fmt(life));
-
-  // Загальні витрати + накопичення
-  const totalAll = growth + commerce + life;
-
-  // Чистий прибуток = маржа − ріст − комерція − життя
-  const chystyi = mz - growth - commerce - life;
-
-  // KPI
-  set('kpi-oborot', fmt(ob));
-  set('kpi-marzha', fmt(mz));
-  set('kpi-vitrati', fmt(growth + life));
-  const profEl = document.getElementById('kpi-profit');
-  profEl.textContent = fmt(chystyi);
-  profEl.className = 'kpi-val ' + (chystyi >= 0 ? 'amber' : 'red');
-
-  const mzPct = ob>0 ? pct(mz,ob) : 0;
-  set('marzha-pct', ob>0 ? mzPct.toFixed(1)+'%' : '— %');
-  set('kpi-oborot-sub', ob>0 ? 'валовий продаж' : 'введіть дані');
-  set('kpi-marzha-pct', ob>0 ? mzPct.toFixed(1)+'% від обороту' : '— % маржинальність');
-  set('kpi-vitrati-pct', mz>0 ? pct(growth+life,mz).toFixed(1)+'% від маржі' : '— %');
-  set('kpi-profit-pct', 'маржа − ріст − комерція − життя');
-
-  // Відсотки — показуємо від МАРЖІ (бо каси від маржі)
   if(mz>0){
-    set('pct-orenda',        pct(FIXED.orenda,mz).toFixed(1)+'%');
-    set('pct-podatky',       pct(FIXED.podatky,mz).toFixed(1)+'%');
-    set('pct-zp',            'від обороту');
-    set('pct-fuel',          pct(FIXED.fuel,mz).toFixed(1)+'%');
-    set('pct-tovar',         pct(tovar,mz).toFixed(1)+'%');
-    set('pct-noviTM',        pct(noviTM,mz).toFixed(1)+'%');
-    set('pct-marketing',     pct(mkt,mz).toFixed(1)+'%');
-    set('pct-claude',        pct(FIXED.claude,mz).toFixed(1)+'%');
-    set('pct-chatgpt',       pct(FIXED.chatgpt,mz).toFixed(1)+'%');
-    set('pct-azure',         pct(FIXED.azure,mz).toFixed(1)+'%');
-    set('pct-tg',            pct(FIXED.tg,mz).toFixed(1)+'%');
-    set('pct-other-rising',  pct(otherR,mz).toFixed(1)+'%');
-    set('pct-family',        pct(family,mz).toFixed(1)+'%');
-    set('pct-vidpochynok',   'від обороту');
-    set('pct-nakopchennia',  '25% від маржі');
-
-    set('pct-growth',   pct(growth,mz).toFixed(1)+'%');
-    set('pct-commerce', '25%');
-    set('pct-life',     pct(life,mz).toFixed(1)+'%');
-
-    // progress bars (actual% vs target%)
-    bar('bar-growth',   pct(growth,mz),   65);
-    bar('bar-commerce', 25,                25);
-    bar('bar-life',     pct(life,mz),      10);
-
-    // summary %
-    set('sum-pct-growth', pct(growth,mz).toFixed(1)+'%');
-    set('sum-pct-mand',   pct(mandatory,mz).toFixed(1)+'%');
-    set('sum-pct-ris',    pct(rising,mz).toFixed(1)+'%');
-    set('sum-pct-com',    '25%');
-    set('sum-pct-lif',    pct(life,mz).toFixed(1)+'%');
-    set('sum-pct-all',    pct(totalAll,mz).toFixed(1)+'%');
-  } else {
-    ['pct-orenda','pct-podatky','pct-fuel','pct-tovar','pct-noviTM',
-     'pct-marketing','pct-claude','pct-chatgpt','pct-azure','pct-tg',
-     'pct-other-rising','pct-family',
-     'pct-growth','pct-commerce','pct-life',
-     'sum-pct-growth','sum-pct-mand','sum-pct-ris','sum-pct-com','sum-pct-lif','sum-pct-all'
-    ].forEach(id=>set(id,'—'));
-    set('pct-zp','від обороту');
-    set('pct-vidpochynok','від обороту');
-    set('pct-nakopchennia','25% від маржі');
-    ['bar-growth','bar-commerce','bar-life'].forEach(id=>{
-      const el=document.getElementById(id); if(el) el.style.width='0%';
-    });
+    document.getElementById('pnl-pct-growth').textContent=(growth/base*100).toFixed(1)+'%';
+    document.getElementById('pnl-pct-life').textContent=(life/base*100).toFixed(1)+'%';
+    barSet('pnl-bar-growth',growth/base*100,65);
+    document.getElementById('ss-pct-gr').textContent=(growth/base*100).toFixed(1)+'%';
+    document.getElementById('ss-pct-mn').textContent=(mandatory/base*100).toFixed(1)+'%';
+    document.getElementById('ss-pct-rs').textContent=(rising/base*100).toFixed(1)+'%';
+    document.getElementById('ss-pct-lf').textContent=(life/base*100).toFixed(1)+'%';
+    document.getElementById('ss-pct-all').textContent=((growth+comm+life)/base*100).toFixed(1)+'%';
   }
+  document.getElementById('ss-growth').textContent=fmt(growth);
+  document.getElementById('ss-mand').textContent=fmt(mandatory);
+  document.getElementById('ss-rising').textContent=fmt(rising);
+  document.getElementById('ss-comm').textContent=fmt(comm);
+  document.getElementById('ss-life').textContent=fmt(life);
+  document.getElementById('ss-all').textContent=fmt(growth+comm+life);
+  const sn=document.getElementById('ss-net');sn.textContent=fmt(net);sn.style.color=net>=0?'var(--green)':'var(--red)';
 
-  set('sum-growth',    fmt(growth));
-  set('sum-mandatory', fmt(mandatory));
-  set('sum-rising',    fmt(rising));
-  set('sum-commerce',  fmt(commerce));
-  set('sum-life',      fmt(life));
-  set('sum-all',       fmt(totalAll));
-  const netEl = document.getElementById('sum-net');
-  netEl.textContent = fmt(chystyi);
-  netEl.style.color = chystyi>=0 ? 'var(--growth)' : '#fb7185';
+  // commerce total
+  let tot=0;Object.values(DB.pnl).forEach(d=>tot+=(d.marzha||0)*.25);
+  if(!DB.pnl[pnlKey()]) tot+=comm;
+  document.getElementById('pnl-comm-total').textContent=fmt(tot);
 
-  // commerce total saved across all months
-  let totalSaved = 0;
-  Object.values(allData).forEach(d=>{ totalSaved += (d.marzha||0)*0.25; });
-  if(!allData[monthKey()]) totalSaved += commerce;
-  set('commerce-total-saved', fmt(totalSaved));
-
-  // donut
-  drawDonut([
-    {label:'Каса Росту',  val:growth,            color:'#4ade80'},
-    {label:'Комерція',    val:commerce,           color:'#f59e0b'},
-    {label:'Каса Життя',  val:life,               color:'#818cf8'},
-    {label:'Прибуток',    val:Math.max(0,chystyi),color:'#60a5fa'},
-  ]);
+  drawDonut([{l:'Ріст',v:growth,c:'#4ade80'},{l:'Комерція',v:comm,c:'#f59e0b'},{l:'Життя',v:life,c:'#818cf8'},{l:'Прибуток',v:Math.max(0,net),c:'#60a5fa'}]);
 }
 
-// ════ DONUT ════
-function drawDonut(segments){
-  const svg = document.getElementById('donut-svg');
-  const legend = document.getElementById('donut-legend');
-  const total = segments.reduce((s,x)=>s+x.val,0);
-  if(total<=0){
-    svg.innerHTML='<circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="16"/>';
-    legend.innerHTML='<div style="font-size:12px;color:var(--muted)">Введіть дані</div>';
-    return;
-  }
-  const r=48, cx=60, cy=60, circ=2*Math.PI*r;
-  let offset=0;
-  let paths='<circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,.03)" stroke-width="16"/>';
-  let legendHtml='';
-  segments.forEach(s=>{
-    if(s.val<=0) return;
-    const frac=s.val/total;
-    const dash=frac*circ;
-    const gap=circ-dash;
-    paths+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.color}" stroke-width="16"
-      stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
-      stroke-dashoffset="${(-offset*circ+circ/4).toFixed(2)}"
-      style="transition:stroke-dasharray .5s"/>`;
-    offset+=frac;
-    legendHtml+=`<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div><span>${s.label}: <b>${fmt(s.val)}</b></span></div>`;
+function renderPnlMonths(){
+  const bar=document.getElementById('pnl-months-bar');
+  const keys=Object.keys(DB.pnl).sort();
+  if(!keys.length){bar.innerHTML='';return;}
+  bar.innerHTML=keys.map(k=>{
+    const[y,m]=k.split('-').map(Number);
+    const act=y===pnlYear&&m===pnlMonth;
+    const d=DB.pnl[k];
+    return `<button class="month-chip${act?' active':''}" onclick="jumpPnl(${y},${m})">
+      <span>${MONTHS[m].slice(0,3)} ${y}</span>
+      <span style="font-size:9px;font-weight:400;color:${act?'rgba(74,222,128,.6)':'var(--muted)'}">${Math.round((d.oborot||0)/1000)}k₴</span>
+    </button>`;
+  }).join('');
+}
+function jumpPnl(y,m){pnlYear=y;pnlMonth=m;loadPnl();}
+function toggleSec(k){const b=document.getElementById('body-'+k);const a=document.getElementById('arr-'+k);b.classList.toggle('open');a.classList.toggle('open');}
+function pp(id){return document.getElementById(id);}
+function barSet(id,pct,target){const el=document.getElementById(id);if(!el)return;el.style.width=Math.min(pct,100)+'%';el.style.background=pct>target+5?'var(--red)':pct>target-5?'var(--amber)':'';}
+
+// ══════════ CLIENTS ══════════
+let cliMonth=now.getMonth(), cliYear=now.getFullYear();
+
+function changeCliMonth(d){cliMonth+=d;if(cliMonth>11){cliMonth=0;cliYear++;}if(cliMonth<0){cliMonth=11;cliYear--;}renderClients();}
+function cliKey(){return `${cliYear}-${cliMonth}`;}
+function getCliData(){return DB.cliData[cliKey()]||{};}
+
+function getCategory(total){
+  if(total>=200000) return {name:'EXCLUSIVE ★',cls:'cat-exclusive',gel:27,other:16,next:null};
+  if(total>=150000) return {name:'LIMITED',cls:'cat-limited',gel:25,other:14,next:200000};
+  if(total>=100000) return {name:'VIP',cls:'cat-vip',gel:23,other:12,next:150000};
+  if(total>=50000)  return {name:'SPECIAL',cls:'cat-special',gel:14,other:10,next:100000};
+  if(total>=20000)  return {name:'ACTIVE',cls:'cat-active',gel:10,other:9,next:50000};
+  return {name:'—',cls:'cat-none',gel:0,other:0,next:20000};
+}
+
+function renderClients(){
+  document.getElementById('cli-month-label').textContent=MONTHS[cliMonth]+' '+cliYear;
+  const data=getCliData();
+  let totalOborot=0,nearCount=0,exclCount=0,activeCount=0;
+
+  // Будуємо групи
+  const groups={};
+  DB.clients.forEach(c=>{
+    if(c.group){
+      if(!groups[c.group]) groups[c.group]=[];
+      groups[c.group].push(c);
+    }
   });
-  svg.innerHTML=paths;
-  legend.innerHTML=legendHtml;
+
+  // Рахуємо загальну суму групи
+  function getGroupTotal(groupId){
+    if(!groupId) return null;
+    return (groups[groupId]||[]).reduce((s,c)=>{const d=data[c.id]||{};return s+(d.h1||0)+(d.h2||0);},0);
+  }
+
+  // Рендеримо — спочатку групові власники, потім звичайні
+  const rendered=new Set();
+  let html='';
+
+  // Спочатку рендеримо заголовки груп
+  Object.entries(groups).forEach(([gid,members])=>{
+    const groupTotal=members.reduce((s,c)=>{const d=data[c.id]||{};return s+(d.h1||0)+(d.h2||0);},0);
+    const cat=getCategory(groupTotal);
+    const isNear=cat.next&&groupTotal>0&&(cat.next-groupTotal)<cat.next*.2;
+    const pct=cat.next?Math.round(groupTotal/cat.next*100):100;
+    const owner=members[0];
+    if(groupTotal>0){activeCount++;totalOborot+=groupTotal;}
+    if(isNear) nearCount++;
+    if(cat.name==='EXCLUSIVE ★') exclCount++;
+
+    html+=`<div class="client-card${isNear?' near-target':''}" style="border-left:3px solid ${cat.name!=='—'?'rgba(129,140,248,.4)':'var(--border)'};margin-bottom:4px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:8px;font-weight:700;">👥 Група власника</div>
+      <div class="client-top">
+        <span class="client-name">${owner.name}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="cat-badge ${cat.cls}">${cat.name}</span>
+          <span class="client-total" style="color:${groupTotal>0?'var(--text)':'var(--muted)'}">${groupTotal>0?fmt(groupTotal):'0₴'}</span>
+        </div>
+      </div>
+      ${cat.next&&groupTotal>0?`<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;"><span>До наступного рівня: ${fmt(cat.next-groupTotal)}</span><span>${pct}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${Math.min(pct,100)}%;background:${isNear?'var(--amber)':'var(--cyan)'}"></div></div></div>`:''}
+      ${cat.gel>0?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Гель/лаки: <b style="color:var(--text)">${cat.gel}%</b> · Інші ТМ: <b style="color:var(--text)">${cat.other}%</b></div>`:''}`;
+
+    // Під-рядки для кожного ФОП в групі
+    members.forEach(c=>{
+      rendered.add(c.id);
+      const d=data[c.id]||{h1:0,h2:0};
+      const sub=(d.h1||0)+(d.h2||0);
+      html+=`<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:10px 12px;margin-bottom:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:13px;font-weight:600;color:var(--muted)">${c.name}</span>
+          <span style="font-size:13px;font-weight:700">${sub>0?fmt(sub):'0₴'}</span>
+        </div>
+        <div class="client-halves">
+          <div class="half-inp-wrap"><div class="half-label">1–15 число</div><input class="inp" type="number" value="${d.h1||''}" placeholder="0" oninput="updateCli('${c.id}','h1',this.value)"></div>
+          <div class="half-inp-wrap"><div class="half-label">16–30 число</div><input class="inp" type="number" value="${d.h2||''}" placeholder="0" oninput="updateCli('${c.id}','h2',this.value)"></div>
+        </div>
+      </div>`;
+    });
+
+    html+=`<div style="display:flex;gap:6px;margin-top:6px;">
+      ${groupTotal>0?`<button class="viber-btn" onclick="copyViberMsg('${owner.id}','15',${groupTotal})">📱 15-те</button><button class="viber-btn" onclick="copyViberMsg('${owner.id}','27',${groupTotal})">📱 27-ме</button><button class="viber-btn" onclick="copyViberMsg('${owner.id}','30',${groupTotal})">📱 30-те</button>`:''}
+      <button style="padding:4px 10px;border-radius:6px;border:1px solid rgba(251,113,133,.2);background:transparent;color:var(--red);font-size:11px;cursor:pointer;margin-left:auto" onclick="deleteGroup('${gid}')">✕</button>
+    </div></div>`;
+  });
+
+  // Звичайні клієнти (без групи)
+  DB.clients.filter(c=>!c.group&&!rendered.has(c.id)).forEach((c,i)=>{
+    const d=data[c.id]||{h1:0,h2:0};
+    const total=(d.h1||0)+(d.h2||0);
+    if(total>0){activeCount++;totalOborot+=total;}
+    const cat=getCategory(total);
+    const isNear=cat.next&&total>0&&(cat.next-total)<cat.next*.2;
+    if(isNear) nearCount++;
+    if(cat.name==='EXCLUSIVE ★') exclCount++;
+    const pct=cat.next?Math.round(total/cat.next*100):100;
+    html+=`<div class="client-card${isNear?' near-target':''}">
+      <div class="client-top">
+        <span class="client-name">${c.name}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="cat-badge ${cat.cls}">${cat.name}</span>
+          <span class="client-total" style="color:${total>0?'var(--text)':'var(--muted)'}">${total>0?fmt(total):'0₴'}</span>
+        </div>
+      </div>
+      <div class="client-halves">
+        <div class="half-inp-wrap"><div class="half-label">1–15 число</div><input class="inp" type="number" value="${d.h1||''}" placeholder="0" oninput="updateCli('${c.id}','h1',this.value)"></div>
+        <div class="half-inp-wrap"><div class="half-label">16–30 число</div><input class="inp" type="number" value="${d.h2||''}" placeholder="0" oninput="updateCli('${c.id}','h2',this.value)"></div>
+      </div>
+      ${cat.next&&total>0?`<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;"><span>До наступного рівня: ${fmt(cat.next-total)}</span><span>${pct}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${Math.min(pct,100)}%;background:${isNear?'var(--amber)':'var(--cyan)'}"></div></div></div>`:''}
+      <div class="client-bottom">
+        ${cat.gel>0?`<span style="font-size:12px;color:var(--muted)">Гель/лаки: <b style="color:var(--text)">${cat.gel}%</b> · Інші ТМ: <b style="color:var(--text)">${cat.other}%</b></span>`:''}
+        ${total>0?`<button class="viber-btn" onclick="copyViberMsg('${c.id}','15',${total})">📱 15-те</button><button class="viber-btn" onclick="copyViberMsg('${c.id}','27',${total})">📱 27-ме</button><button class="viber-btn" onclick="copyViberMsg('${c.id}','30',${total})">📱 30-те</button>`:''}
+        <button style="padding:4px 10px;border-radius:6px;border:1px solid rgba(251,113,133,.2);background:transparent;color:var(--red);font-size:11px;cursor:pointer;" onclick="deleteCli('${c.id}')">✕</button>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('cli-list').innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--muted)">Немає клієнтів</div>';
+  document.getElementById('cli-count').textContent=activeCount;
+  document.getElementById('cli-total').textContent=fmt(totalOborot);
+  document.getElementById('cli-near').textContent=nearCount;
+  document.getElementById('cli-excl').textContent=exclCount;
 }
 
-// ════ UTILS ════
-function n(id){ return parseFloat(document.getElementById(id)?.value)||0; }
-function set(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
-function sv(id,v){ const el=document.getElementById(id); if(el) el.value=v||''; }
-function fmt(v){ return Math.round(v).toLocaleString('uk')+'₴'; }
-function pct(a,b){ return b>0?a/b*100:0; }
-function bar(id,actual,target){
-  const el=document.getElementById(id);
-  if(!el) return;
-  const w=Math.min(actual/target*100,100);
-  el.style.width=w+'%';
-  el.style.background=actual>target+5?'#fb7185':actual>target-5?'#f59e0b':'';
+function updateCli(cid,half,val){
+  if(!DB.cliData[cliKey()]) DB.cliData[cliKey()]={};
+  if(!DB.cliData[cliKey()][cid]) DB.cliData[cliKey()][cid]={h1:0,h2:0};
+  DB.cliData[cliKey()][cid][half]=parseFloat(val)||0;
+  saveDB();
+  // оновлюємо тільки статистику без перерендеру
+  const data=getCliData();
+  let tot=0,near=0,excl=0,act=0;
+  DB.clients.forEach(c=>{const d=data[c.id]||{};const t=(d.h1||0)+(d.h2||0);if(t>0)act++;tot+=t;const cat=getCategory(t);if(cat.next&&t>0&&(cat.next-t)<cat.next*.15)near++;if(cat.name==='EXCLUSIVE ★')excl++;});
+  document.getElementById('cli-count').textContent=act;
+  document.getElementById('cli-total').textContent=fmt(tot);
+  document.getElementById('cli-near').textContent=near;
+  document.getElementById('cli-excl').textContent=excl;
 }
 
-function toggleSec(key){
-  const body=document.getElementById('body-'+key);
-  const arrow=document.getElementById('arrow-'+key);
-  body.classList.toggle('open');
-  arrow.classList.toggle('open');
+function copyViberMsg(cid,day,total){
+  const c=DB.clients.find(x=>x.id===cid);if(!c)return;
+  const data=getCliData();const d=data[cid]||{h1:0,h2:0};
+  if(total===undefined) total=(d.h1||0)+(d.h2||0);
+  const cat=getCategory(total);
+  let msg='';
+  if(day==='15') msg=`Доброго дня, ${c.name}!\n\nПроміжні результати за ${MONTHS[cliMonth]}:\nСума замовлень (1-15): ${fmt(d.h1||0)}\n\nДо кінця місяця ще є час покращити результат! 💪\n\nZ повагою, AVANTI Cosmetics`;
+  else if(day==='27'){
+    if(cat.next&&total>0){const diff=cat.next-total;msg=`Доброго дня, ${c.name}!\n\nДо кінця місяця залишилось кілька днів.\nПоточна сума: ${fmt(total)}\nДо наступного рівня: ${fmt(diff)}\n\nМаємо час ще підтягнути! 🚀\n\nZ повагою, AVANTI Cosmetics`;}
+    else msg=`Доброго дня, ${c.name}!\n\nДо кінця місяця залишилось кілька днів.\nПоточна сума: ${fmt(total)}\n\nZ повагою, AVANTI Cosmetics`;
+  } else msg=`Доброго дня, ${c.name}!\n\n📊 Підсумки ${MONTHS[cliMonth]}:\nЗагальна сума замовлень: ${fmt(total)}\n${cat.name!=='—'?`Ваша категорія: ${cat.name}\nЗнижка: ${cat.gel}% (гель/лаки) · ${cat.other}% (інші ТМ)\n`:''}\nДякуємо за співпрацю! 🙏\n\nZ повагою, AVANTI Cosmetics`;
+  navigator.clipboard.writeText(msg).then(()=>{playSound('copy');toast(`📋 ${c.name} — скопійовано!`);}).catch(()=>{prompt('Скопіюйте вручну:',msg);});
 }
 
-function changeMonth(d){
-  curMonth+=d;
-  if(curMonth>11){curMonth=0;curYear++;}
-  if(curMonth<0){curMonth=11;curYear--;}
-  document.getElementById('month-label').textContent=MONTHS[curMonth]+' '+curYear;
-  loadIntoForm();
+function deleteGroup(gid){if(!confirm('Видалити всіх клієнтів цієї групи?'))return;DB.clients=DB.clients.filter(c=>c.group!==gid);saveDB();renderClients();}
+function deleteCli(id){if(!confirm('Видалити клієнта?'))return;DB.clients=DB.clients.filter(x=>x.id!==id);saveDB();renderClients();}
+
+function broadcastViber(day){
+  const data=getCliData();
+  let targets=[];
+  if(day==='15'){
+    targets=DB.clients.filter(c=>{const d=data[c.id]||{};return (d.h1||0)>0;});
+  } else if(day==='27'){
+    targets=DB.clients.filter(c=>{const d=data[c.id]||{};const t=(d.h1||0)+(d.h2||0);const cat=getCategory(t);return cat.next&&t>0&&(cat.next-t)<cat.next*.2;});
+  } else {
+    targets=DB.clients.filter(c=>{const d=data[c.id]||{};return ((d.h1||0)+(d.h2||0))>0;});
+  }
+  if(!targets.length){toast(day==='27'?'✅ Немає клієнтів близько до порогу':'❌ Немає клієнтів з сумами');return;}
+  // Show broadcast modal
+  const msgs=targets.map(c=>{
+    const d=data[c.id]||{h1:0,h2:0};
+    const total=(d.h1||0)+(d.h2||0);
+    const cat=getCategory(total);
+    let msg='';
+    if(day==='15') msg=`Доброго дня, ${c.name}!\n\nПроміжні результати за ${MONTHS[cliMonth]}:\nСума замовлень (1-15): ${fmt(d.h1||0)}\n\nДо кінця місяця ще є час покращити результат! 💪\n\nZ повагою, AVANTI Cosmetics`;
+    else if(day==='27'){const diff=cat.next-total;msg=`Доброго дня, ${c.name}!\n\nДо кінця місяця залишилось кілька днів.\nПоточна сума: ${fmt(total)}\nДо ${cat.next>=200000?'EXCLUSIVE':'наступного рівня'}: ${fmt(diff)}\n\nМаємо час ще підтягнути! 🚀\n\nZ повагою, AVANTI Cosmetics`;}
+    else msg=`Доброго дня, ${c.name}!\n\n📊 Підсумки ${MONTHS[cliMonth]}:\nЗагальна сума замовлень: ${fmt(total)}\n${cat.name!=='—'?`Ваша категорія: ${cat.name}\nЗнижка: ${cat.gel}% (гель/лаки) · ${cat.other}% (інші ТМ)\n`:''}\nДякуємо за співпрацю! 🙏\n\nZ повагою, AVANTI Cosmetics`;
+    return {name:c.name,msg};
+  });
+  openBroadcastModal(msgs,day);
 }
 
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
+let broadcastList=[], broadcastIdx=0;
+function openBroadcastModal(msgs,day){
+  broadcastList=msgs; broadcastIdx=0;
+  const titles={'15':'📱 Розсилка 15-го числа','27':'⚠️ Нагадування 27-го','30':'📊 Підсумки 30-го'};
+  document.getElementById('bcast-title').textContent=titles[day]||'📱 Розсилка';
+  document.getElementById('bcast-count').textContent=`${msgs.length} клієнтів`;
+  showBroadcastItem();
+  document.getElementById('broadcast-overlay').classList.add('open');
+}
+function showBroadcastItem(){
+  if(broadcastIdx>=broadcastList.length){closeBroadcast();toast(`✅ Готово! Надіслано ${broadcastList.length} повідомлень`);return;}
+  const item=broadcastList[broadcastIdx];
+  document.getElementById('bcast-name').textContent=`${broadcastIdx+1}/${broadcastList.length}: ${item.name}`;
+  document.getElementById('bcast-msg').value=item.msg;
+  document.getElementById('bcast-progress').style.width=((broadcastIdx/broadcastList.length)*100)+'%';
+}
+function bcastCopy(){
+  const msg=document.getElementById('bcast-msg').value;
+  navigator.clipboard.writeText(msg).then(()=>{
+    playSound('copy');
+    toast(`📋 ${broadcastList[broadcastIdx].name} — скопійовано!`);
+    broadcastIdx++;
+    setTimeout(()=>showBroadcastItem(),500);
+  }).catch(()=>{document.getElementById('bcast-msg').select();document.execCommand('copy');broadcastIdx++;showBroadcastItem();});
+}
+function bcastSkip(){broadcastIdx++;showBroadcastItem();}
+function closeBroadcast(){document.getElementById('broadcast-overlay').classList.remove('open');}
+
+// ── EXCEL IMPORT ──
+function importFromExcel(e){
+  const file=e.target.files[0];if(!file)return;
+  document.getElementById('excel-hint').style.display='block';
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      // Parse CSV or try to extract text
+      const text=ev.target.result;
+      const lines=text.split('\n').filter(l=>l.trim());
+      let matched=0;
+      const data=getCliData();
+      if(!DB.cliData[cliKey()]) DB.cliData[cliKey()]={};
+
+      lines.forEach(line=>{
+        const cols=line.split(/[;\t,]/);
+        if(cols.length<2) return;
+        const nameCol=cols[0].replace(/"/g,'').trim();
+        // знаходимо клієнта за прізвищем (часткове збіг)
+        const client=DB.clients.find(c=>nameCol.toLowerCase().includes(c.name.toLowerCase())||c.name.toLowerCase().includes(nameCol.toLowerCase()));
+        if(!client) return;
+        // шукаємо число в рядку
+        const nums=cols.slice(1).map(c=>parseFloat(c.replace(/[^\d.]/g,''))).filter(n=>n>0);
+        if(!nums.length) return;
+        if(!DB.cliData[cliKey()][client.id]) DB.cliData[cliKey()][client.id]={h1:0,h2:0};
+        // якщо одне число — вся сума в h1, якщо два — h1 і h2
+        if(nums.length===1) DB.cliData[cliKey()][client.id].h1=nums[0];
+        else{DB.cliData[cliKey()][client.id].h1=nums[0];DB.cliData[cliKey()][client.id].h2=nums[1];}
+        matched++;
+      });
+      saveDB();renderClients();
+      toast(matched>0?`✅ Знайдено ${matched} клієнтів з Excel!`:'⚠️ Клієнтів не знайдено. Перевір формат файлу');
+    }catch(err){toast('❌ Помилка читання файлу: '+err.message);}
+  };
+  reader.readAsText(file,'utf-8');
+  e.target.value='';
 }
 
-function exportCSV(){
-  const ob=n('inp-oborot'), mz=n('inp-marzha');
-  const log=n('log1')+n('log2')+n('log3')+n('log4');
-  const zp=ob*0.02, vidp=ob*0.0035, comm=ob*0.25;
-  const rows=[
-    ['Місяць',MONTHS[curMonth]+' '+curYear],
-    ['',''],
-    ['Оборот',ob],['Маржа',mz],[''],
-    ['КАСА РОСТУ (65%)',''],
-    ['  Оренда складу',FIXED.orenda],
-    ['  Податки',FIXED.podatky],
-    ['  Логістика тиж1',n('log1')],['  тиж2',n('log2')],['  тиж3',n('log3')],['  тиж4',n('log4')],
-    ['  Логістика разом',log],
-    ['  ЗП дружині (2%)',Math.round(zp)],
-    ['  Амортизація+паливо',FIXED.fuel],
-    ['  Товар',n('inp-tovar')],
-    ['  Нові ТМ',n('inp-noviTM')],
-    ['  Маркетинг',n('inp-marketing')],
-    ['  Claude',FIXED.claude],['  ChatGPT',FIXED.chatgpt],
-    ['  Azure',FIXED.azure],['  Telegram',FIXED.tg],
-    ['  Інші витрати росту',n('inp-other-rising')],
-    [''],
-    ['КАСА КОМЕРЦІЯ (25%)',Math.round(comm)],
-    [''],
-    ['КАСА ЖИТТЯ (10%)',''],
-    ['  Сімейний бюджет',17000],
-    ['  Відпочинок (0.35%)',Math.round(vidp)],
-  ];
-  const csv='\uFEFF'+rows.map(r=>r.join(';')).join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download=`PnL_${MONTHS[curMonth]}_${curYear}.csv`;
-  a.click();
-  showToast('📥 CSV завантажено');
+function openAddClient(){document.getElementById('cm-name').value='';document.getElementById('cm-phone').value='';document.getElementById('cli-modal').classList.add('open');}
+function closeAddClient(){document.getElementById('cli-modal').classList.remove('open');}
+function saveClient(){
+  const name=document.getElementById('cm-name').value.trim();
+  if(!name){toast('❌ Введіть назву');return;}
+  DB.clients.push({id:uid(),name,phone:document.getElementById('cm-phone').value.trim()});
+  saveDB();closeAddClient();renderClients();toast('✅ Клієнта додано');
 }
 
-// ════ INIT ════
-document.getElementById('month-label').textContent=MONTHS[curMonth]+' '+curYear;
-loadIntoForm();
+// ── NOTIFICATIONS ──
+let notifEnabled=false;
+async function toggleNotifications(){
+  if(!('Notification' in window)){toast('❌ Цей браузер не підтримує сповіщення. Відкрий через Chrome');return;}
+  try{
+    if(Notification.permission==='granted'){
+      notifEnabled=!notifEnabled;
+      document.getElementById('notif-btn').style.color=notifEnabled?'var(--green)':'';
+      toast(notifEnabled?'🔔 Сповіщення увімкнено':'🔕 Сповіщення вимкнено');
+      if(notifEnabled) checkNotifications();
+    } else {
+      const perm=await Notification.requestPermission();
+      if(perm==='granted'){notifEnabled=true;document.getElementById('notif-btn').style.color='var(--green)';toast('🔔 Сповіщення увімкнено!');checkNotifications();}
+      else toast('❌ Дозвіл відхилено. Дозволь у налаштуваннях Chrome');
+    }
+  }catch(e){toast('❌ Сповіщення недоступні в цьому режимі');}
+}
+
+function checkNotifications(){
+  if(!notifEnabled) return;
+  if(!('Notification' in window)||Notification.permission!=='granted') return;
+  try{
+    const today=new Date(),td=today.getDate(),tm=today.getMonth(),ty=today.getFullYear();
+    DB.payments.forEach(p=>{
+      if(p.status==='paid') return;
+      const daysLeft=p.day-td;
+      if(tm===payMonth&&ty===payYear&&daysLeft===1){
+        new Notification(`💳 Завтра оплата: ${p.name}`,{body:`${fmt(p.amount)} — ${p.day} числа`});
+        playSound('alert');
+      }
+    });
+    const viberDays=[15,27,30];
+    viberDays.forEach(vd=>{
+      if(td===vd-1){
+        const data=getCliData();
+        const count=DB.clients.filter(c=>{const d=data[c.id]||{};return ((d.h1||0)+(d.h2||0))>0;}).length;
+        if(count>0){
+          new Notification(`📱 Завтра (${vd}-го) відправити Viber`,{body:`${count} клієнтів чекають повідомлення`});
+          playSound('alert');
+        }
+      }
+    });
+  }catch(e){}
+}
+
+function playSound(type){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    if(type==='alert'){osc.frequency.setValueAtTime(880,ctx.currentTime);osc.frequency.setValueAtTime(660,ctx.currentTime+.1);}
+    else{osc.frequency.setValueAtTime(1047,ctx.currentTime);osc.frequency.setValueAtTime(1319,ctx.currentTime+.08);}
+    gain.gain.setValueAtTime(.3,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.3);
+    osc.start();osc.stop(ctx.currentTime+.3);
+  }catch(e){}
+}
+
+setInterval(checkNotifications,3600000);
+
+function sendAllViber(){broadcastViber('15');}
+function sendNearViber(){broadcastViber('27');}
+
+function openAddClient(){document.getElementById('cm-name').value='';document.getElementById('cm-phone').value='';document.getElementById('cli-modal').classList.add('open');}
+function closeAddClient(){document.getElementById('cli-modal').classList.remove('open');}
+function saveClient(){
+  const name=document.getElementById('cm-name').value.trim();
+  if(!name){toast('❌ Введіть назву');return;}
+  DB.clients.push({id:uid(),name,phone:document.getElementById('cm-phone').value.trim()});
+  saveDB();closeAddClient();renderClients();toast('✅ Клієнта додано');
+}
+function deleteCli(id){if(!confirm('Видалити клієнта?'))return;DB.clients=DB.clients.filter(x=>x.id!==id);saveDB();renderClients();}
+
+// ══════════ SYNC ══════════
+async function copyData(){
+  pnlSave();
+  const json=JSON.stringify(DB);
+  try{await navigator.clipboard.writeText(json);toast('📋 Скопійовано! Вставляй у Telegram');}
+  catch(e){document.getElementById('import-ta').value=json;openImport();toast('📋 Скопіюй вручну');}
+}
+function openImport(){document.getElementById('import-overlay').classList.add('open');document.getElementById('import-err').style.display='none';document.getElementById('import-ta').value='';}
+function closeImport(){document.getElementById('import-overlay').classList.remove('open');}
+function doImport(){
+  let text=document.getElementById('import-ta').value.trim();
+  text=text.replace(/[\u200B-\u200D\uFEFF]/g,'').replace(/\n|\r/g,'');
+  const match=text.match(/\{[\s\S]*\}/);
+  if(!match){showImportErr('❌ JSON не знайдено. Скопіюй повністю.');return;}
+  try{
+    const imp=JSON.parse(match[0]);
+    if(imp.pnl||imp.payments||imp.clients||imp.cliData){
+      if(imp.pnl) DB.pnl={...DB.pnl,...imp.pnl};
+      if(imp.payments) DB.payments=imp.payments;
+      if(imp.clients) DB.clients=imp.clients;
+      if(imp.cliData) DB.cliData={...DB.cliData,...imp.cliData};
+    } else {
+      // старий формат тільки pnl
+      DB.pnl={...DB.pnl,...imp};
+    }
+    saveDB();closeImport();loadPnl();renderPayments();renderClients();
+    toast('✅ Дані імпортовано!');
+  }catch(e){showImportErr('❌ Помилка: '+e.message);}
+}
+function showImportErr(msg){const el=document.getElementById('import-err');el.textContent=msg;el.style.display='block';}
+
+// ══════════ DONUT ══════════
+function drawDonut(segs){
+  const svg=document.getElementById('donut-svg');
+  const leg=document.getElementById('donut-legend');
+  const tot=segs.reduce((s,x)=>s+x.v,0);
+  if(tot<=0){svg.innerHTML='<circle cx="55" cy="55" r="44" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="14"/>';leg.innerHTML='<div style="font-size:12px;color:var(--muted)">Введіть дані</div>';return;}
+  const r=44,cx=55,cy=55,circ=2*Math.PI*r;
+  let off=0,paths='<circle cx="55" cy="55" r="44" fill="none" stroke="rgba(255,255,255,.03)" stroke-width="14"/>',lhtml='';
+  segs.forEach(s=>{if(s.v<=0)return;const fr=s.v/tot;const dash=fr*circ;paths+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.c}" stroke-width="14" stroke-dasharray="${dash.toFixed(2)} ${(circ-dash).toFixed(2)}" stroke-dashoffset="${(-off*circ+circ/4).toFixed(2)}"/>`;off+=fr;lhtml+=`<div class="legend-item"><div class="legend-dot" style="background:${s.c}"></div><span>${s.l}: <b>${fmt(s.v)}</b></span></div>`;});
+  svg.innerHTML=paths;leg.innerHTML=lhtml;
+}
+
+// ══════════ UTILS ══════════
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function fmt(v){return Math.round(v).toLocaleString('uk')+'₴';}
+function nv(id){return parseFloat(document.getElementById(id)?.value)||0;}
+function sv(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
+function pp(id){return document.getElementById(id);}
+
+// ══════════ INIT ══════════
+renderPayments();
+loadPnl();
+renderClients();
+// Перевіряємо сповіщення при відкритті (тільки якщо вже дозволено)
+try{if('Notification' in window&&Notification.permission==='granted'){notifEnabled=true;document.getElementById('notif-btn').style.color='var(--green)';checkNotifications();}}catch(e){}
 </script>
 </body>
 </html>
