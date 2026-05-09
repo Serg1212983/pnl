@@ -592,8 +592,10 @@ const BUILT_IN={
     {id:'p9',name:'Показники лічильників',amount:0,day:30,cat:'📦 Інше',remind:3,type:'reminder',status:'pending',notes:'Фото від орендаря'},
   ],
   clients:[
+    // Група Немеш
     {id:'c1',name:'Немеш',phone:'',group:'g1'},
     {id:'c1b',name:'ФОП Петрище',phone:'',group:'g1'},
+    // Окремі клієнти
     {id:'c2',name:'Рущак',phone:''},
     {id:'c3',name:'Лендел',phone:''},
     {id:'c4',name:'Білак',phone:''},
@@ -606,11 +608,19 @@ const BUILT_IN={
     {id:'c11',name:'Думен',phone:''},
     {id:'c12',name:'Морозько Олександр',phone:''},
     {id:'c13',name:'Сятиня',phone:''},
-    {id:'c14',name:'Сабов',phone:''},
-    {id:'c15',name:'Кричфалушій',phone:''},
-    {id:'c16',name:'Прислупська',phone:''},
+    {id:'c14',name:'Кричфалушій',phone:''},
     {id:'c17',name:'Худенко',phone:''},
     {id:'c18',name:'Іжакевич',phone:''},
+    // Група Прислупська (3 магазини Ужгород)
+    {id:'c16a',name:'Прислупська (маг.1)',phone:'',group:'g3'},
+    {id:'c16b',name:'Прислупська (маг.2)',phone:'',group:'g3'},
+    {id:'c16c',name:'Прислупська (маг.3)',phone:'',group:'g3'},
+    // Група Сабов (4 магазини)
+    {id:'c14a',name:'Сабов',phone:'',group:'g4'},
+    {id:'c14b',name:'Сабов (с.Бедевля)',phone:'',group:'g4'},
+    {id:'c14c',name:'Сабов (с.Вишково)',phone:'',group:'g4'},
+    {id:'c14d',name:'Сабов (смт.Буштино)',phone:'',group:'g4'},
+    // Група Бісун
     {id:'c19',name:'ФОП Бісун',phone:'',group:'g2'},
     {id:'c19b',name:'ФОП Холод',phone:'',group:'g2'},
     {id:'c19c',name:'ФОП Копос',phone:'',group:'g2'},
@@ -1047,38 +1057,103 @@ function bcastSkip(){broadcastIdx++;showBroadcastItem();}
 function closeBroadcast(){document.getElementById('broadcast-overlay').classList.remove('open');}
 
 // ── EXCEL IMPORT ──
+// Таблиця зіставлення назв 1С → id клієнта в дашборді
+const NAME_MAP = {
+  'немеш': 'c1',
+  'петрище': 'c1b',
+  'рущак': 'c2',
+  'лендел': 'c3',
+  'білак': 'c4',
+  'костак': 'c5',
+  'козушко': 'c6',
+  'цибарь': 'c7',
+  'крьока': 'c8',
+  'папарига': 'c9',
+  'гоєр': 'c10',
+  'думен': 'c11',
+  'морозько': 'c12',
+  'сятиня': 'c13',
+  'кричфалушій': 'c14',
+  'кричфалуші': 'c14',
+  'худенко': 'c17',
+  'іжакевич': 'c18',
+  // Прислупська - всі адреси → окремі записи групи g3
+  'прислупська': 'c16a',
+  // Сабов - основний і адреси
+  'сабов гейза гейзович (с.бедевля)': 'c14b',
+  'сабов гейза гейзович (с.вишково)': 'c14c',
+  'сабов гейза гейзович (смт.буштино)': 'c14d',
+  'сабов гейза гейзович': 'c14a',
+  'сабов': 'c14a',
+  // Бісун група
+  'бісун': 'c19',
+  'холод': 'c19b',
+  'копос': 'c19c',
+  // Осак — ігноруємо (оптовий, окремі умови)
+  'осак наталія': null,
+  'осак': null,
+};
+
 function importFromExcel(e){
   const file=e.target.files[0];if(!file)return;
   document.getElementById('excel-hint').style.display='block';
   const reader=new FileReader();
   reader.onload=ev=>{
     try{
-      // Parse CSV or try to extract text
       const text=ev.target.result;
       const lines=text.split('\n').filter(l=>l.trim());
-      let matched=0;
-      const data=getCliData();
+      let matched=0, skipped=0;
       if(!DB.cliData[cliKey()]) DB.cliData[cliKey()]={};
+      const today=new Date().getDate();
 
       lines.forEach(line=>{
-        const cols=line.split(/[;\t,]/);
+        const cols=line.split(/[;\t]/);
         if(cols.length<2) return;
-        const nameCol=cols[0].replace(/"/g,'').trim();
-        // знаходимо клієнта за прізвищем (часткове збіг)
-        const client=DB.clients.find(c=>nameCol.toLowerCase().includes(c.name.toLowerCase())||c.name.toLowerCase().includes(nameCol.toLowerCase()));
-        if(!client) return;
-        // шукаємо число в рядку
-        const nums=cols.slice(1).map(c=>parseFloat(c.replace(/[^\d.]/g,''))).filter(n=>n>0);
+
+        // Очищаємо назву
+        let raw=cols[0].replace(/"/g,'').trim();
+        raw=raw.replace(/^ФОП\s+/i,'').trim();
+        const key=raw.toLowerCase().trim();
+
+        // Пропускаємо рядки без суми або заголовки
+        if(key==='контрагент'||key==='підсумок'||key==='итого'||key==='') return;
+
+        // Знаходимо id по таблиці
+        let clientId=null;
+
+        // Спочатку шукаємо точний збіг
+        if(NAME_MAP.hasOwnProperty(key)){
+          clientId=NAME_MAP[key];
+        } else {
+          // Шукаємо по першому слову (прізвищу)
+          const surname=key.split(/\s+/)[0];
+          const mapKey=Object.keys(NAME_MAP).find(k=>k.startsWith(surname));
+          if(mapKey) clientId=NAME_MAP[mapKey];
+        }
+
+        if(clientId===null) return; // null = свідомо ігноруємо (Осак)
+        if(!clientId){ return; } // не знайдено
+
+        // Знаходимо суму — шукаємо перше число > 100
+        const nums=cols.slice(1).map(c=>{
+          const clean=c.replace(/"/g,'').replace(/\s/g,'').replace(',','.').trim();
+          return parseFloat(clean);
+        }).filter(n=>!isNaN(n)&&n>100);
+
         if(!nums.length) return;
-        if(!DB.cliData[cliKey()][client.id]) DB.cliData[cliKey()][client.id]={h1:0,h2:0};
-        // якщо одне число — вся сума в h1, якщо два — h1 і h2
-        if(nums.length===1) DB.cliData[cliKey()][client.id].h1=nums[0];
-        else{DB.cliData[cliKey()][client.id].h1=nums[0];DB.cliData[cliKey()][client.id].h2=nums[1];}
+
+        if(!DB.cliData[cliKey()][clientId]) DB.cliData[cliKey()][clientId]={h1:0,h2:0};
+        // До 15-го — записуємо в h1, після — в h2
+        if(today<=15) DB.cliData[cliKey()][clientId].h1=nums[0];
+        else DB.cliData[cliKey()][clientId].h2=nums[0];
         matched++;
       });
+
       saveDB();renderClients();
-      toast(matched>0?`✅ Знайдено ${matched} клієнтів з Excel!`:'⚠️ Клієнтів не знайдено. Перевір формат файлу');
-    }catch(err){toast('❌ Помилка читання файлу: '+err.message);}
+      toast(matched>0
+        ?`✅ Завантажено ${matched} клієнтів з Excel!`
+        :'⚠️ Клієнтів не знайдено. Збережи файл як .xlsx і спробуй ще раз');
+    }catch(err){toast('❌ Помилка: '+err.message);}
   };
   reader.readAsText(file,'utf-8');
   e.target.value='';
