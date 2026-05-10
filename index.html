@@ -474,6 +474,7 @@ select.inp option{background:var(--s2);}
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="broadcastViber('15')">📱 Всім 15-го</button>
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="broadcastViber('27')">📱 Близьким 27-го</button>
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="broadcastViber('30')">📱 Всім 30-го</button>
+    <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="resetCliData()">🗑 Скинути суми</button>
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="document.getElementById('excel-inp').click()">📊 З Excel (1С)</button>
     <input type="file" id="excel-inp" accept=".xlsx,.xls" style="display:none" onchange="importFromExcel(event)">
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" id="notif-btn" onclick="toggleNotifications()">🔔 Сповіщення</button>
@@ -644,8 +645,20 @@ const BUILT_IN={
     {id:'cp11',name:'Славна Євгенія Олександрівна',phone:''},
   ],
 };
-let DB=(function(){const s=load();return{pnl:{...BUILT_IN.pnl,...(s.pnl||{})},payments:s.payments||BUILT_IN.payments,clients:s.clients||BUILT_IN.clients,cliData:s.cliData||{}};})();
-function saveDB(){save(DB);}
+let DB=(function(){
+  const s=load();
+  return {
+    pnl:{...BUILT_IN.pnl,...(s.pnl||{})},
+    payments:s.payments||BUILT_IN.payments,
+    // Клієнти ЗАВЖДИ з файлу — не з localStorage
+    clients:BUILT_IN.clients,
+    cliData:s.cliData||{}
+  };
+})();
+function saveDB(){
+  // Зберігаємо тільки pnl, payments і cliData — не clients
+  save({pnl:DB.pnl, payments:DB.payments, cliData:DB.cliData});
+}
 
 // ── TABS ──
 function switchTab(id,btn){
@@ -1066,6 +1079,13 @@ function copyViberMsg(cid,day,total){
 
 function deleteGroup(gid){if(!confirm('Видалити всіх клієнтів цієї групи?'))return;DB.clients=DB.clients.filter(c=>c.group!==gid);saveDB();renderClients();}
 function deleteCli(id){if(!confirm('Видалити клієнта?'))return;DB.clients=DB.clients.filter(x=>x.id!==id);saveDB();renderClients();}
+
+function resetCliData(){
+  if(!confirm(`Скинути всі суми клієнтів за ${MONTHS[cliMonth]} ${cliYear}?\n\nКлієнти залишаться, тільки суми обнуляться.`)) return;
+  if(DB.cliData[cliKey()]) delete DB.cliData[cliKey()];
+  saveDB();renderClients();
+  toast('🗑 Суми скинуто — завантаж Excel з 1С');
+}
 
 function broadcastViber(day){
   const data=getCliData();
