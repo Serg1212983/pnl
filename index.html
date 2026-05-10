@@ -5,7 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AVANTI — Дашборд</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// SheetJS завантажується динамічно
+window.XLSX_LOADED=false;
+function loadXLSX(cb){
+  if(window.XLSX){cb();return;}
+  const s=document.createElement('script');
+  s.src='https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
+  s.onload=()=>{window.XLSX_LOADED=true;cb();};
+  s.onerror=()=>{
+    // Спробуємо інший CDN
+    const s2=document.createElement('script');
+    s2.src='https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js';
+    s2.onload=()=>{window.XLSX_LOADED=true;cb();};
+    s2.onerror=()=>cb(new Error('SheetJS не завантажився'));
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+}
+</script>
 <style>
 :root {
   --bg:#080b10; --s1:#0d1117; --s2:#141922; --s3:#1c2333;
@@ -476,7 +494,7 @@ select.inp option{background:var(--s2);}
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="broadcastViber('30')">📱 Всім 30-го</button>
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="resetCliData()">🗑 Скинути суми</button>
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="document.getElementById('excel-inp').click()">📊 З Excel (1С)</button>
-    <input type="file" id="excel-inp" accept=".xlsx,.xls" style="display:none" onchange="importFromExcel(event)">
+    <input type="file" id="excel-inp" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="importFromExcel(event)">
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" id="notif-btn" onclick="toggleNotifications()">🔔 Сповіщення</button>
   </div>
 
@@ -1379,99 +1397,136 @@ function importFromExcel(e){
   document.getElementById('excel-hint').style.display='block';
   toast('⏳ Читаю файл...');
 
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    try{
-      // Читаємо xlsx через SheetJS
-      const data=new Uint8Array(ev.target.result);
-      const workbook=XLSX.read(data,{type:'array'});
+  const isXlsx=file.name.toLowerCase().endsWith('.xlsx')||file.name.toLowerCase().endsWith('.xls');
 
-      // Беремо перший аркуш
-      const sheetName=workbook.SheetNames[0];
-      const sheet=workbook.Sheets[sheetName];
-
-      // Читаємо як об'єкт з заголовками
-      const rawRows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false,defval:''});
-
-      let matched=0;
-      const unmatched=[];
-      if(!DB.cliData[cliKey()]) DB.cliData[cliKey()]={};
-      const today=new Date().getDate();
-
-      rawRows.forEach(row=>{
-        if(!row||!Array.isArray(row)) return;
-
-        // Збираємо всі непорожні текстові значення з рядка
-        const cells=row.map(c=>String(c||'').trim()).filter(Boolean);
-        if(cells.length<1) return;
-
-        // Шукаємо клітинку з назвою ФОП (містить пробіл і літери)
-        let raw='', amount=0;
-        const nameCell=cells.find(c=>
-          c.length>5 &&
-          isNaN(parseFloat(c.replace(/\s/g,'').replace(',','.'))) &&
-          /[а-яіїєА-ЯІЇЄ]/.test(c)
-        );
-        if(!nameCell) return;
-        raw=nameCell.replace(/^ФОП\s+/i,'').trim();
-
-        // Шукаємо суму — число > 100 (формат 1С: "2 517,72" або "2517.72")
-        const numCell=cells.find(c=>{
-          // Прибираємо пробіли між цифрами, міняємо кому на крапку
-          const clean=c.replace(/\s+/g,'').replace(',','.').replace(/[^\d.]/g,'');
-          const n=parseFloat(clean);
-          return !isNaN(n)&&n>100;
-        });
-        if(numCell){
-          const clean=numCell.replace(/\s+/g,'').replace(',','.').replace(/[^\d.]/g,'');
-          amount=parseFloat(clean);
-        }
-        if(amount===0) return;
-
-        const key=raw.toLowerCase().trim();
-        if(!key||key==='контрагент'||key==='підсумок'||key==='итого'||key==='всього'||key==='сума') return;
-
-        // Знаходимо клієнта
-        let clientId=null;
-        if(NAME_MAP.hasOwnProperty(key)){
-          clientId=NAME_MAP[key];
-        } else {
-          const surname=key.split(/\s+/)[0];
-          const found=Object.keys(NAME_MAP).find(k=>k.split(/\s+/)[0]===surname);
-          if(found) clientId=NAME_MAP[found];
-          else unmatched.push(raw);
-        }
-
-        if(clientId===null) return; // свідомо ігноруємо
-        if(!clientId) return;
-
-        if(!DB.cliData[cliKey()][clientId]) DB.cliData[cliKey()][clientId]={h1:0,h2:0};
-        // Додаємо до існуючої суми (для груп з кількома магазинами)
-        if(today<=15) DB.cliData[cliKey()][clientId].h1+=amount;
-        else DB.cliData[cliKey()][clientId].h2+=amount;
-        matched++;
-      });
-
-      saveDB();renderClients();
-      if(matched>0){
-        let msg=`✅ Завантажено ${matched} клієнтів!`;
-        if(unmatched.length>0){
-          msg+=`\n\nНе розпізнано (${unmatched.length}):\n`+unmatched.join('\n');
-          alert(msg);
-        } else {
-          toast(msg);
-        }
+  if(isXlsx){
+    // Спробуємо завантажити SheetJS якщо ще не завантажений
+    loadXLSX((err)=>{
+      if(window.XLSX&&!err){
+        // SheetJS доступний — читаємо xlsx правильно
+        const reader=new FileReader();
+        reader.onload=ev=>{
+          try{
+            const data=new Uint8Array(ev.target.result);
+            const workbook=XLSX.read(data,{type:'array'});
+            const sheet=workbook.Sheets[workbook.SheetNames[0]];
+            const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false,defval:''});
+            const text=rows.map(r=>r.join('\t')).join('\n');
+            processImportText(text);
+          }catch(ex){toast('❌ Помилка: '+ex.message);}
+        };
+        reader.readAsArrayBuffer(file);
       } else {
-        const names=rawRows.slice(0,25).map(r=>Array.isArray(r)?r.map(c=>String(c||'').trim()).filter(Boolean).join(' | '):'').filter(Boolean);
-        alert('⚠️ Клієнтів не знайдено.\n\nРядки у файлі:\n'+names.join('\n'));
+        // SheetJS недоступний — читаємо як текст через zip
+        const reader=new FileReader();
+        reader.onload=ev=>{
+          try{
+            const arr=new Uint8Array(ev.target.result);
+            const zip=extractZipText(arr);
+            if(zip) processImportText(zip);
+            else toast('❌ Не вдалось прочитати файл. Збережи як CSV і спробуй ще раз');
+          }catch(ex){toast('❌ Помилка: '+ex.message);}
+        };
+        reader.readAsArrayBuffer(file);
       }
-    }catch(err){
-      console.error(err);
-      toast('❌ Помилка читання файлу: '+err.message);
-    }
-  };
-  reader.readAsArrayBuffer(file);
+    });
+  } else {
+    // CSV або TXT
+    const reader=new FileReader();
+    reader.onload=ev=>{processImportText(ev.target.result);};
+    reader.readAsText(file,'utf-8');
+  }
   e.target.value='';
+}
+
+function extractZipText(uint8arr){
+  try{
+    // Конвертуємо в рядок для пошуку
+    let str='';
+    for(let i=0;i<Math.min(uint8arr.length,500000);i++){
+      str+=String.fromCharCode(uint8arr[i]);
+    }
+    // Шукаємо SharedStrings
+    const markers=['SharedStrings.xml','sharedStrings.xml'];
+    let found='';
+    for(const m of markers){
+      const idx=str.indexOf(m);
+      if(idx!==-1){
+        const chunk=str.substring(idx,idx+300000);
+        const matches=chunk.match(/<t[^>]*>([^<]*)<\/t>/g)||[];
+        found=matches.map(m=>m.replace(/<[^>]+>/g,'').trim()).filter(Boolean).join('\n');
+        if(found) break;
+      }
+    }
+    return found||null;
+  }catch(e){return null;}
+}
+
+function processImportText(text){
+  // Очищаємо
+  text=text.replace(/\r/g,'').replace(/[\u200B-\u200D\uFEFF]/g,'');
+  const lines=text.split('\n').filter(l=>l.trim());
+
+  let matched=0;
+  const unmatched=[];
+  if(!DB.cliData[cliKey()]) DB.cliData[cliKey()]={};
+  const today=new Date().getDate();
+
+  lines.forEach(line=>{
+    // Розбиваємо по табу, крапці з комою або комі
+    const cols=line.split(/\t|;|,/);
+    const cells=cols.map(c=>c.replace(/"/g,'').trim()).filter(Boolean);
+    if(cells.length<1) return;
+
+    // Шукаємо назву клієнта (містить кириличні літери, довша за 5 символів)
+    const nameCell=cells.find(c=>
+      c.length>5&&
+      /[а-яіїєА-ЯІЇЄ]/.test(c)&&
+      isNaN(parseFloat(c.replace(/[\s,]/g,'')))
+    );
+    if(!nameCell) return;
+
+    let raw=nameCell.replace(/^ФОП\s+/i,'').trim();
+    const key=raw.toLowerCase().trim();
+    if(!key||key==='контрагент'||key==='підсумок'||key==='итого'||key==='всього') return;
+
+    // Знаходимо клієнта
+    let clientId=null;
+    if(NAME_MAP.hasOwnProperty(key)){
+      clientId=NAME_MAP[key];
+    } else {
+      const surname=key.split(/\s+/)[0];
+      const found=Object.keys(NAME_MAP).find(k=>k.split(/\s+/)[0]===surname);
+      if(found) clientId=NAME_MAP[found];
+      else unmatched.push(raw);
+    }
+
+    if(clientId===null) return;
+    if(!clientId) return;
+
+    // Шукаємо суму
+    let amount=0;
+    for(const c of cells){
+      const clean=c.replace(/\s+/g,'').replace(',','.').replace(/[^\d.]/g,'');
+      const n=parseFloat(clean);
+      if(!isNaN(n)&&n>100){amount=n;break;}
+    }
+    if(amount===0) return;
+
+    if(!DB.cliData[cliKey()][clientId]) DB.cliData[cliKey()][clientId]={h1:0,h2:0};
+    if(today<=15) DB.cliData[cliKey()][clientId].h1+=amount;
+    else DB.cliData[cliKey()][clientId].h2+=amount;
+    matched++;
+  });
+
+  saveDB();renderClients();
+  if(matched>0){
+    let msg=`✅ Завантажено ${matched} клієнтів!`;
+    if(unmatched.length>0) alert(msg+`\n\nНе розпізнано (${unmatched.length}):\n`+unmatched.join('\n'));
+    else toast(msg);
+  } else {
+    alert('⚠️ Клієнтів не знайдено.\n\nСпробуй зберегти файл з 1С як CSV (крапка з комою)');
+  }
 }
 
 function openAddClient(){document.getElementById('cm-name').value='';document.getElementById('cm-phone').value='';document.getElementById('cli-modal').classList.add('open');}
