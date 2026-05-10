@@ -631,6 +631,7 @@ const BUILT_IN={
     {id:'cp3',name:'Лисік',phone:'',potential:true},
     {id:'cp4',name:'Могилюк',phone:'',potential:true},
     {id:'cp5',name:'Довжанин (маг.Софія)',phone:'',potential:true},
+    {id:'cp6',name:'Погоріляк',phone:'',potential:true},
   ],
 };
 let DB=(function(){const s=load();return{pnl:{...BUILT_IN.pnl,...(s.pnl||{})},payments:s.payments||BUILT_IN.payments,clients:s.clients||BUILT_IN.clients,cliData:s.cliData||{}};})();
@@ -1115,8 +1116,33 @@ const NAME_MAP = {
   'папарига': 'c9',
   'гоєр олександра василівна': 'c10',
   'гоєр': 'c10',
+  // Лендел — правильна назва в 1С
+  'лендел наталія іванівна': 'c3',
+  'лендел': 'c3',
+  // Думен + Бердар (один власник)
   'думен марія василівна': 'c11',
   'думен': 'c11',
+  'бердар ганна миколаївна (маг." орхідея")': 'c11',
+  'бердар ганна миколаївна': 'c11',
+  'бердар': 'c11',
+  // Погоріляк — потенційний
+  'погоріляк петро іванович': 'cp6',
+  'погоріляк': 'cp6',
+  // Ігноруємо
+  'беламут марія степанівна': null,
+  'беламут': null,
+  'біжко вікторія': null,
+  'біжко': null,
+  'бобик світлана михайлівна': null,
+  'бобик': null,
+  'гісем ярослава михайлівна': null,
+  'гісем': null,
+  'грубінка наталя павлівна': null,
+  'грубінка': null,
+  'філекі марія іванівна': null,
+  'філекі': null,
+  'яворівська олеся василівна': null,
+  'яворівська': null,
   'морозько олександр олександрович': 'c12',
   'морозько': 'c12',
   'сятиня марина василівна': 'c13',
@@ -1174,30 +1200,48 @@ function importFromExcel(e){
       const sheetName=workbook.SheetNames[0];
       const sheet=workbook.Sheets[sheetName];
 
-      // Конвертуємо в масив рядків
-      const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false});
+      // Читаємо як об'єкт з заголовками
+      const rawRows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false,defval:''});
 
       let matched=0;
       const unmatched=[];
       if(!DB.cliData[cliKey()]) DB.cliData[cliKey()]={};
       const today=new Date().getDate();
 
-      rows.forEach(row=>{
-        if(!row||row.length<2) return;
+      rawRows.forEach(row=>{
+        if(!row||!Array.isArray(row)) return;
 
-        // В файлі 1С: колонка 0 порожня, колонка 1 = назва, колонка 2 = сума
-        // Шукаємо першу непорожню колонку з текстом (назва клієнта)
-        let nameCol=-1, raw='';
-        for(let i=0;i<Math.min(row.length,3);i++){
-          const v=String(row[i]||'').trim();
-          if(v.length>3&&isNaN(parseFloat(v))){nameCol=i;raw=v;break;}
+        // Збираємо всі непорожні текстові значення з рядка
+        const cells=row.map(c=>String(c||'').trim()).filter(Boolean);
+        if(cells.length<1) return;
+
+        // Шукаємо клітинку з назвою ФОП (містить пробіл і літери)
+        let raw='', amount=0;
+        const nameCell=cells.find(c=>
+          c.length>5 &&
+          isNaN(parseFloat(c.replace(/\s/g,'').replace(',','.'))) &&
+          /[а-яіїєА-ЯІЇЄ]/.test(c)
+        );
+        if(!nameCell) return;
+        raw=nameCell.replace(/^ФОП\s+/i,'').trim();
+
+        // Шукаємо суму — число > 100 (формат 1С: "2 517,72" або "2517.72")
+        const numCell=cells.find(c=>{
+          // Прибираємо пробіли між цифрами, міняємо кому на крапку
+          const clean=c.replace(/\s+/g,'').replace(',','.').replace(/[^\d.]/g,'');
+          const n=parseFloat(clean);
+          return !isNaN(n)&&n>100;
+        });
+        if(numCell){
+          const clean=numCell.replace(/\s+/g,'').replace(',','.').replace(/[^\d.]/g,'');
+          amount=parseFloat(clean);
         }
-        if(nameCol===-1||!raw) return;
+        if(amount===0) return;
 
-        raw=raw.replace(/^ФОП\s+/i,'').trim();
         const key=raw.toLowerCase().trim();
-        if(!key||key==='контрагент'||key==='підсумок'||key==='итого'||key==='всього') return;
+        if(!key||key==='контрагент'||key==='підсумок'||key==='итого'||key==='всього'||key==='сума') return;
 
+        // Знаходимо клієнта
         let clientId=null;
         if(NAME_MAP.hasOwnProperty(key)){
           clientId=NAME_MAP[key];
@@ -1208,17 +1252,8 @@ function importFromExcel(e){
           else unmatched.push(raw);
         }
 
-        if(clientId===null) return;
+        if(clientId===null) return; // свідомо ігноруємо
         if(!clientId) return;
-
-        // Шукаємо суму — перше число > 100 після колонки з назвою
-        let amount=0;
-        for(let i=nameCol+1;i<row.length;i++){
-          const val=String(row[i]||'').replace(/\s/g,'').replace(',','.').trim();
-          const num=parseFloat(val);
-          if(!isNaN(num)&&num>100){amount=num;break;}
-        }
-        if(amount===0) return;
 
         if(!DB.cliData[cliKey()][clientId]) DB.cliData[cliKey()][clientId]={h1:0,h2:0};
         if(today<=15) DB.cliData[cliKey()][clientId].h1=amount;
@@ -1236,8 +1271,8 @@ function importFromExcel(e){
           toast(msg);
         }
       } else {
-        const names=rows.slice(0,25).map(r=>String(r[0]||'').trim()).filter(Boolean);
-        alert('⚠️ Клієнтів не знайдено.\n\nНазви у файлі:\n'+names.join('\n'));
+        const names=rawRows.slice(0,25).map(r=>Array.isArray(r)?r.map(c=>String(c||'').trim()).filter(Boolean).join(' | '):'').filter(Boolean);
+        alert('⚠️ Клієнтів не знайдено.\n\nРядки у файлі:\n'+names.join('\n'));
       }
     }catch(err){
       console.error(err);
