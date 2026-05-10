@@ -878,8 +878,92 @@ function toggleSec(k){const b=document.getElementById('body-'+k);const a=documen
 function pp(id){return document.getElementById(id);}
 function barSet(id,pct,target){const el=document.getElementById(id);if(!el)return;el.style.width=Math.min(pct,100)+'%';el.style.background=pct>target+5?'var(--red)':pct>target-5?'var(--amber)':'';}
 
-// ══════════ CLIENTS ══════════
-let cliMonth=now.getMonth(), cliYear=now.getFullYear();
+// ── HISTORY & FORECAST ──
+function getClientHistory(cid){
+  // Отримуємо дані за останні 6 місяців
+  const result=[];
+  for(let i=5;i>=0;i--){
+    let m=cliMonth-i, y=cliYear;
+    if(m<0){m+=12;y--;}
+    const key=`${y}-${m}`;
+    const d=(DB.cliData[key]||{})[cid]||{h1:0,h2:0};
+    const total=(d.h1||0)+(d.h2||0);
+    result.push({month:MONTHS[m].slice(0,3), total, key});
+  }
+  return result;
+}
+
+function getForecast(cid){
+  const today=new Date().getDate();
+  const d=getCliData()[cid]||{h1:0,h2:0};
+  const h1=d.h1||0;
+  const h2=d.h2||0;
+  const total=h1+h2;
+  if(total===0) return null;
+  // Прогноз на основі поточного темпу
+  let forecast=0;
+  if(today<=15 && h1>0){
+    // Маємо тільки першу половину — проектуємо на весь місяць
+    forecast=Math.round(h1/today*30);
+  } else if(today>15 && total>0){
+    forecast=Math.round(total/today*30);
+  }
+  return forecast>0?forecast:null;
+}
+
+function drawMiniChart(history){
+  const max=Math.max(...history.map(h=>h.total),1);
+  const w=120,h=36;
+  const pts=history.map((d,i)=>{
+    const x=i*(w/(history.length-1));
+    const y=h-(d.total/max*(h-4))-2;
+    return `${x},${y}`;
+  }).join(' ');
+  const bars=history.map((d,i)=>{
+    const x=i*(w/(history.length-1));
+    const bh=d.total/max*(h-4);
+    return `<rect x="${x-4}" y="${h-bh-2}" width="8" height="${bh}" rx="2" fill="rgba(74,222,128,${d.total>0?'0.3':'0.05'})"/>
+            <title>${d.month}: ${d.total>0?Math.round(d.total/1000)+'k₴':'0'}</title>`;
+  }).join('');
+  return `<svg width="${w}" height="${h}" style="overflow:visible">
+    ${bars}
+    <polyline points="${pts}" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/>
+    ${history.map((d,i)=>{
+      const x=i*(w/(history.length-1));
+      const cy=h-(d.total/max*(h-4))-2;
+      return d.total>0?`<circle cx="${x}" cy="${cy}" r="2.5" fill="var(--green)"/>`:'';
+    }).join('')}
+  </svg>`;
+}
+
+function getViberTemplate(cat, total, diff, mon, half1, day){
+  // Шаблони повідомлень по категоріях
+  if(day==='15'){
+    if(cat.name==='EXCLUSIVE ★'||cat.name==='LIMITED'){
+      return `Доброго дня.\n\nПроміжні результати за ${mon}:\n📊 Сума: *${fmt(half1)}*`;
+    } else if(cat.name==='VIP'||cat.name==='SPECIAL'){
+      return `Доброго дня.\n\nПроміжні результати за ${mon}:\n📊 Сума: *${fmt(half1)}*${diff>0?`\nДо наступного рівня: *${fmt(diff)}*`:''}`;
+    } else {
+      return `Доброго дня.\n\nПроміжні результати за ${mon}:\n📊 Сума: *${fmt(half1)}*`;
+    }
+  } else if(day==='27'){
+    if(cat.name==='—'||!cat.next){
+      return `Доброго дня.\n\n📊 Поточна сума за ${mon}: *${fmt(total)}*\nДо категорії ACTIVE: *${fmt(20000-total)}*`;
+    }
+    return `Доброго дня.\n\n📊 Поточна сума за ${mon}: *${fmt(total)}*\nДо наступного рівня: *${fmt(diff)}*`;
+  } else {
+    // 30-те — різні тексти по категоріях
+    const catTexts={
+      'EXCLUSIVE ★': `\n\n🏆 Ваша категорія: *EXCLUSIVE ★*\n💰 Знижка всі ТМ: *${cat.other}%*\n💅 Знижка гель/лаки: *${cat.gel}%*\n\nДякуємо за високий рівень співпраці! 🤝`,
+      'LIMITED': `\n\n🏆 Ваша категорія: *LIMITED*\n💰 Знижка всі ТМ: *${cat.other}%*\n💅 Знижка гель/лаки: *${cat.gel}%*`,
+      'VIP': `\n\n🏆 Ваша категорія: *VIP*\n💰 Знижка всі ТМ: *${cat.other}%*\n💅 Знижка гель/лаки: *${cat.gel}%*`,
+      'SPECIAL': `\n\n🏆 Ваша категорія: *SPECIAL*\n💰 Знижка всі ТМ: *${cat.other}%*\n💅 Знижка гель/лаки: *${cat.gel}%*`,
+      'ACTIVE': `\n\n🏆 Ваша категорія: *ACTIVE*\n💰 Знижка всі ТМ: *${cat.other}%*\n💅 Знижка гель/лаки: *${cat.gel}%*`,
+    };
+    const catText=catTexts[cat.name]||'';
+    return `Доброго дня.\n\n📊 Підсумки ${mon}:\nСума: *${fmt(total)}*${catText}`;
+  }
+}
 
 function changeCliMonth(d){cliMonth+=d;if(cliMonth>11){cliMonth=0;cliYear++;}if(cliMonth<0){cliMonth=11;cliYear--;}renderClients();}
 function cliKey(){return `${cliYear}-${cliMonth}`;}
@@ -974,6 +1058,13 @@ function renderClients(){
     if(isNear) nearCount++;
     if(cat.name==='EXCLUSIVE ★') exclCount++;
     const pct=cat.next?Math.round(total/cat.next*100):100;
+    const history=getClientHistory(c.id);
+    const forecast=getForecast(c.id);
+    const prevMonth=history[history.length-2];
+    const diff=prevMonth?total-prevMonth.total:0;
+    const diffPct=prevMonth&&prevMonth.total>0?Math.round(diff/prevMonth.total*100):0;
+    const forecastCat=forecast?getCategory(forecast):null;
+
     html+=`<div class="client-card${isNear?' near-target':''}">
       <div class="client-top">
         <span class="client-name">${c.name}</span>
@@ -982,13 +1073,19 @@ function renderClients(){
           <span class="client-total" style="color:${total>0?'var(--text)':'var(--muted)'}">${total>0?fmt(total):'0₴'}</span>
         </div>
       </div>
+      ${total>0&&prevMonth?`<div style="font-size:11px;margin-bottom:6px;color:${diff>=0?'var(--green)':'var(--red)'}">
+        ${diff>=0?'▲':'▼'} ${diff>=0?'+':''}${fmt(Math.abs(diff))} (${diffPct>=0?'+':''}${diffPct}% vs ${prevMonth.month})
+      </div>`:''}
+      ${forecast?`<div style="font-size:11px;color:var(--cyan);margin-bottom:6px;">
+        📈 Прогноз місяця: <b>${fmt(forecast)}</b>${forecastCat&&forecastCat.name!==cat.name?` → <span style="color:var(--amber)">${forecastCat.name}</span>`:''}
+      </div>`:''}
+      <div style="margin-bottom:10px;">${drawMiniChart(history)}</div>
       <div class="client-halves">
         <div class="half-inp-wrap"><div class="half-label">1–15 число</div><input class="inp" type="number" value="${d.h1||''}" placeholder="0" oninput="updateCli('${c.id}','h1',this.value)"></div>
         <div class="half-inp-wrap"><div class="half-label">16–30 число</div><input class="inp" type="number" value="${d.h2||''}" placeholder="0" oninput="updateCli('${c.id}','h2',this.value)"></div>
       </div>
-      ${cat.next&&total>0?`<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;"><span>До наступного рівня: ${fmt(cat.next-total)}</span><span>${pct}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${Math.min(pct,100)}%;background:${isNear?'var(--amber)':'var(--cyan)'}"></div></div></div>`:''}
+      ${cat.next&&total>0?`<div style="margin:8px 0;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;"><span>До наступного рівня: ${fmt(cat.next-total)}</span><span>${pct}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${Math.min(pct,100)}%;background:${isNear?'var(--amber)':'var(--cyan)'}"></div></div></div>`:''}
       <div class="client-bottom">
-        ${cat.gel>0?`<span style="font-size:12px;color:var(--muted)">Гель/лаки: <b style="color:var(--text)">${cat.gel}%</b> · Інші ТМ: <b style="color:var(--text)">${cat.other}%</b></span>`:''}
         ${total>0?`<button class="viber-btn" onclick="copyViberMsg('${c.id}','15',${total})">📱 15-те</button><button class="viber-btn" onclick="copyViberMsg('${c.id}','27',${total})">📱 27-ме</button><button class="viber-btn" onclick="copyViberMsg('${c.id}','30',${total})">📱 30-те</button>`:''}
         <button style="padding:4px 10px;border-radius:6px;border:1px solid rgba(251,113,133,.2);background:transparent;color:var(--red);font-size:11px;cursor:pointer;" onclick="deleteCli('${c.id}')">✕</button>
       </div>
@@ -1059,16 +1156,13 @@ function copyViberMsg(cid,day,total){
 
   if(day==='15'){
     const half1=(d.h1||0);
-    msg=`Доброго дня.\n\nПроміжні результати за ${mon}:\n📊 Сума: *${fmt(half1)}*`;
+    const diff=cat.next?cat.next-total:0;
+    msg=getViberTemplate(cat,total,diff,mon,half1,'15');
   } else if(day==='27'){
-    if(cat.next&&total>0){
-      const diff=cat.next-total;
-      msg=`Доброго дня.\n\n📊 Поточна сума за ${mon}: *${fmt(total)}*\nДо наступного рівня: *${fmt(diff)}*`;
-    } else {
-      msg=`Доброго дня.\n\n📊 Поточна сума за ${mon}: *${fmt(total)}*`;
-    }
+    const diff=cat.next?cat.next-total:0;
+    msg=getViberTemplate(cat,total,diff,mon,0,'27');
   } else {
-    msg=`Доброго дня.\n\n📊 Підсумки ${mon}:\nСума: *${fmt(total)}*${cat.name!=='—'?`\n\n🏆 Ваша категорія: *${cat.name}*\n💰 Знижка всі ТМ: *${cat.other}%*\n💅 Знижка гель/лаки: *${cat.gel}%*`:''}`;
+    msg=getViberTemplate(cat,total,0,mon,0,'30');
   }
 
   navigator.clipboard.writeText(msg).then(()=>{
