@@ -5,25 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AVANTI — Дашборд</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script>
-// SheetJS завантажується динамічно
-window.XLSX_LOADED=false;
-function loadXLSX(cb){
-  if(window.XLSX){cb();return;}
-  const s=document.createElement('script');
-  s.src='https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
-  s.onload=()=>{window.XLSX_LOADED=true;cb();};
-  s.onerror=()=>{
-    // Спробуємо інший CDN
-    const s2=document.createElement('script');
-    s2.src='https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js';
-    s2.onload=()=>{window.XLSX_LOADED=true;cb();};
-    s2.onerror=()=>cb(new Error('SheetJS не завантажився'));
-    document.head.appendChild(s2);
-  };
-  document.head.appendChild(s);
-}
-</script>
 <style>
 :root {
   --bg:#080b10; --s1:#0d1117; --s2:#141922; --s3:#1c2333;
@@ -226,6 +207,109 @@ select.inp option{background:var(--s2);}
   <button class="tab-btn active" onclick="switchTab('payments',this)">📅 Платежі</button>
   <button class="tab-btn" onclick="switchTab('pnl',this)">📊 P&L</button>
   <button class="tab-btn" onclick="switchTab('clients',this)">👥 Клієнти</button>
+  <button class="tab-btn" onclick="switchTab('realty',this)">🏠 Нерухомість</button>
+</div>
+
+<!-- ══════════ TAB 4: НЕРУХОМІСТЬ ══════════ -->
+<div class="tab-panel" id="tab-realty">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+    <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#fcd34d);display:flex;align-items:center;justify-content:center;font-size:18px;">🏠</div>
+    <div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;">НЕРУХОМІСТЬ</div>
+      <div style="font-size:11px;color:var(--muted);">Трекер накопичення на квартиру</div>
+    </div>
+  </div>
+
+  <!-- Ціль -->
+  <div class="card" style="padding:20px;margin-bottom:14px;border-top:2px solid var(--amber);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-family:'Unbounded',sans-serif;font-size:13px;">Ціль накопичення</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input class="inp" type="number" id="realty-goal-usd" placeholder="30000" style="width:110px;text-align:right;" oninput="realtyRecalc()">
+        <span style="color:var(--muted);font-size:13px;">$</span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="font-size:12px;color:var(--muted);">Курс USD/UAH</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input class="inp" type="number" id="realty-rate" placeholder="41" style="width:80px;text-align:right;" oninput="realtyRecalc()">
+        <span style="color:var(--muted);font-size:13px;">₴/$</span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding-top:10px;border-top:1px solid var(--border);">
+      <span style="color:var(--muted);">Ціль в гривнях:</span>
+      <span style="font-weight:700;color:var(--amber)" id="realty-goal-uah">0 ₴</span>
+    </div>
+  </div>
+
+  <!-- Поточний прогрес -->
+  <div class="card" style="padding:20px;margin-bottom:14px;">
+    <div style="font-family:'Unbounded',sans-serif;font-size:13px;margin-bottom:14px;">Поточний прогрес</div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;">
+      <span style="color:var(--muted);">Накопичено (каса комерція):</span>
+      <span style="font-weight:700;color:var(--green)" id="realty-saved-auto">0 ₴</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;">
+      <span style="color:var(--muted);">Додаткові накопичення:</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input class="inp" type="number" id="realty-extra" placeholder="0" style="width:120px;text-align:right;" oninput="realtyRecalc()">
+        <span style="color:var(--muted);font-size:12px;">₴</span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);font-size:14px;">
+      <span style="color:var(--muted);">Всього накопичено:</span>
+      <span style="font-family:'Unbounded',sans-serif;font-size:18px;color:var(--green)" id="realty-total">0 ₴</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px;">
+      <span style="color:var(--muted);">В доларах (~):</span>
+      <span style="font-weight:700;color:var(--amber)" id="realty-total-usd">0 $</span>
+    </div>
+    <div style="margin-top:14px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px;">
+        <span id="realty-prog-label">Прогрес до цілі</span>
+        <span id="realty-prog-pct">0%</span>
+      </div>
+      <div class="prog-track" style="height:10px;">
+        <div class="prog-fill" id="realty-prog-fill" style="background:linear-gradient(90deg,var(--amber),#fcd34d);width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Залишилось -->
+  <div class="card" style="padding:20px;margin-bottom:14px;">
+    <div style="font-family:'Unbounded',sans-serif;font-size:13px;margin-bottom:14px;">Прогноз</div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;">
+      <span style="color:var(--muted);">Залишилось накопичити:</span>
+      <span style="font-weight:700;color:var(--red)" id="realty-remain">0 ₴</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;">
+      <span style="color:var(--muted);">Залишилось в доларах:</span>
+      <span style="font-weight:700;color:var(--red)" id="realty-remain-usd">0 $</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span style="font-size:13px;color:var(--muted);">Щомісячне накопичення (25% від маржі):</span>
+      <span style="font-weight:700;color:var(--cyan)" id="realty-monthly">0 ₴</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);font-size:13px;">
+      <span style="color:var(--muted);">Орієнтовно місяців до цілі:</span>
+      <span style="font-family:'Unbounded',sans-serif;font-size:20px;color:var(--amber)" id="realty-months">—</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px;">
+      <span style="color:var(--muted);">Орієнтовна дата:</span>
+      <span style="font-weight:700;color:var(--amber)" id="realty-date">—</span>
+    </div>
+  </div>
+
+  <!-- При якому обороті -->
+  <div class="card" style="padding:20px;margin-bottom:14px;">
+    <div style="font-family:'Unbounded',sans-serif;font-size:13px;margin-bottom:14px;">При якому обороті досягну цілі швидше</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="realty-scenarios"></div>
+  </div>
+
+  <div style="display:flex;gap:8px;justify-content:flex-end;">
+    <button class="btn btn-ghost" onclick="realtyReset()">🗑 Скинути</button>
+    <button class="btn btn-green" onclick="realtySave()">💾 Зберегти</button>
+  </div>
 </div>
 
 <!-- ══════════ TAB 1: PAYMENTS ══════════ -->
@@ -1396,70 +1480,49 @@ function importFromExcel(e){
   const file=e.target.files[0];if(!file)return;
   document.getElementById('excel-hint').style.display='block';
   toast('⏳ Читаю файл...');
-
   const isXlsx=file.name.toLowerCase().endsWith('.xlsx')||file.name.toLowerCase().endsWith('.xls');
-
-  if(isXlsx){
-    // Спробуємо завантажити SheetJS якщо ще не завантажений
-    loadXLSX((err)=>{
-      if(window.XLSX&&!err){
-        // SheetJS доступний — читаємо xlsx правильно
-        const reader=new FileReader();
-        reader.onload=ev=>{
-          try{
-            const data=new Uint8Array(ev.target.result);
-            const workbook=XLSX.read(data,{type:'array'});
-            const sheet=workbook.Sheets[workbook.SheetNames[0]];
-            const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false,defval:''});
-            const text=rows.map(r=>r.join('\t')).join('\n');
-            processImportText(text);
-          }catch(ex){toast('❌ Помилка: '+ex.message);}
-        };
-        reader.readAsArrayBuffer(file);
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      if(isXlsx){
+        const arr=new Uint8Array(ev.target.result);
+        const text=extractXlsxStrings(arr);
+        if(text) processImportText(text);
+        else toast('❌ Не вдалось прочитати файл');
       } else {
-        // SheetJS недоступний — читаємо як текст через zip
-        const reader=new FileReader();
-        reader.onload=ev=>{
-          try{
-            const arr=new Uint8Array(ev.target.result);
-            const zip=extractZipText(arr);
-            if(zip) processImportText(zip);
-            else toast('❌ Не вдалось прочитати файл. Збережи як CSV і спробуй ще раз');
-          }catch(ex){toast('❌ Помилка: '+ex.message);}
-        };
-        reader.readAsArrayBuffer(file);
+        processImportText(ev.target.result);
       }
-    });
-  } else {
-    // CSV або TXT
-    const reader=new FileReader();
-    reader.onload=ev=>{processImportText(ev.target.result);};
-    reader.readAsText(file,'utf-8');
-  }
+    }catch(err){toast('❌ Помилка: '+err.message);}
+  };
+  if(isXlsx) reader.readAsArrayBuffer(file);
+  else reader.readAsText(file,'utf-8');
   e.target.value='';
 }
 
-function extractZipText(uint8arr){
+function extractXlsxStrings(uint8arr){
   try{
-    // Конвертуємо в рядок для пошуку
-    let str='';
-    for(let i=0;i<Math.min(uint8arr.length,500000);i++){
-      str+=String.fromCharCode(uint8arr[i]);
+    // Декодуємо безпечно через TextDecoder (латиниця + спецсимволи)
+    const latin=new TextDecoder('latin1').decode(uint8arr);
+    // Шукаємо SharedStrings у zip
+    for(const marker of ['SharedStrings.xml','sharedStrings.xml']){
+      const idx=latin.indexOf(marker);
+      if(idx===-1) continue;
+      // Знаходимо початок XML контенту після маркера
+      const xmlStart=latin.indexOf('<?xml',idx);
+      const xmlEnd=latin.indexOf('</sst>',xmlStart);
+      if(xmlStart===-1) continue;
+      const xmlChunk=latin.substring(xmlStart, xmlEnd>0?xmlEnd+6:xmlStart+500000);
+      // Декодуємо UTF-8 для кирилиці
+      const bytes=new Uint8Array(xmlChunk.length);
+      for(let i=0;i<xmlChunk.length;i++) bytes[i]=xmlChunk.charCodeAt(i);
+      const utf8=new TextDecoder('utf-8',{fatal:false}).decode(bytes);
+      // Витягуємо текст з <t> тегів
+      const matches=utf8.match(/<t[^>]*>([^<]*)<\/t>/g)||[];
+      const strings=matches.map(m=>m.replace(/<[^>]*>/g,'').trim()).filter(Boolean);
+      if(strings.length>0) return strings.join('\n');
     }
-    // Шукаємо SharedStrings
-    const markers=['SharedStrings.xml','sharedStrings.xml'];
-    let found='';
-    for(const m of markers){
-      const idx=str.indexOf(m);
-      if(idx!==-1){
-        const chunk=str.substring(idx,idx+300000);
-        const matches=chunk.match(/<t[^>]*>([^<]*)<\/t>/g)||[];
-        found=matches.map(m=>m.replace(/<[^>]+>/g,'').trim()).filter(Boolean).join('\n');
-        if(found) break;
-      }
-    }
-    return found||null;
-  }catch(e){return null;}
+    return null;
+  }catch(e){console.error(e);return null;}
 }
 
 function processImportText(text){
@@ -1662,10 +1725,91 @@ function nv(id){return parseFloat(document.getElementById(id)?.value)||0;}
 function sv(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
 function pp(id){return document.getElementById(id);}
 
+// ══════════ НЕРУХОМІСТЬ ══════════
+function realtyLoad(){
+  const r=JSON.parse(localStorage.getItem('avanti_realty')||'{}');
+  if(r.goal) document.getElementById('realty-goal-usd').value=r.goal;
+  if(r.rate) document.getElementById('realty-rate').value=r.rate;
+  if(r.extra) document.getElementById('realty-extra').value=r.extra;
+  realtyRecalc();
+}
+
+function realtySave(){
+  const data={
+    goal:parseFloat(document.getElementById('realty-goal-usd').value)||0,
+    rate:parseFloat(document.getElementById('realty-rate').value)||0,
+    extra:parseFloat(document.getElementById('realty-extra').value)||0,
+  };
+  localStorage.setItem('avanti_realty',JSON.stringify(data));
+  toast('✅ Збережено!');
+}
+
+function realtyReset(){
+  if(!confirm('Скинути всі дані нерухомості?')) return;
+  localStorage.removeItem('avanti_realty');
+  document.getElementById('realty-goal-usd').value='';
+  document.getElementById('realty-rate').value='';
+  document.getElementById('realty-extra').value='';
+  realtyRecalc();
+  toast('🗑 Скинуто');
+}
+
+function realtyRecalc(){
+  const goalUsd=parseFloat(document.getElementById('realty-goal-usd').value)||0;
+  const rate=parseFloat(document.getElementById('realty-rate').value)||41;
+  const extra=parseFloat(document.getElementById('realty-extra').value)||0;
+
+  // Автоматично беремо суму каси комерції з P&L
+  let autoSaved=0;
+  Object.values(DB.pnl).forEach(d=>{autoSaved+=(d.marzha||0)*0.25;});
+
+  const goalUah=goalUsd*rate;
+  const totalSaved=autoSaved+extra;
+  const remain=Math.max(0,goalUah-totalSaved);
+  const pct=goalUah>0?Math.min(Math.round(totalSaved/goalUah*100),100):0;
+
+  // Середнє накопичення на місяць (25% від середньої маржі)
+  const months=Object.keys(DB.pnl).length||1;
+  const avgMarzha=Object.values(DB.pnl).reduce((s,d)=>s+(d.marzha||0),0)/months;
+  const monthlySave=avgMarzha*0.25;
+
+  // Скільки місяців до цілі
+  const monthsLeft=monthlySave>0?Math.ceil(remain/monthlySave):0;
+  const targetDate=new Date();
+  targetDate.setMonth(targetDate.getMonth()+monthsLeft);
+
+  // Оновлюємо UI
+  document.getElementById('realty-goal-uah').textContent=goalUah>0?fmt(goalUah):'0 ₴';
+  document.getElementById('realty-saved-auto').textContent=fmt(autoSaved);
+  document.getElementById('realty-total').textContent=fmt(totalSaved);
+  document.getElementById('realty-total-usd').textContent=rate>0?Math.round(totalSaved/rate).toLocaleString('uk')+' $':'0 $';
+  document.getElementById('realty-remain').textContent=fmt(remain);
+  document.getElementById('realty-remain-usd').textContent=rate>0?Math.round(remain/rate).toLocaleString('uk')+' $':'0 $';
+  document.getElementById('realty-monthly').textContent=fmt(monthlySave);
+  document.getElementById('realty-prog-fill').style.width=pct+'%';
+  document.getElementById('realty-prog-pct').textContent=pct+'%';
+  document.getElementById('realty-months').textContent=monthsLeft>0?monthsLeft+' міс.':'—';
+  document.getElementById('realty-date').textContent=monthsLeft>0?targetDate.toLocaleDateString('uk',{month:'long',year:'numeric'}):'—';
+
+  // Сценарії при різних оборотах
+  const scenarios=[500000,750000,1000000,1500000];
+  const html=scenarios.map(oborot=>{
+    const scenMarzha=oborot*(avgMarzha/Object.values(DB.pnl).reduce((s,d)=>s+(d.oborot||0),0)||0.18);
+    const scenMonthly=scenMarzha*0.25;
+    const scenMonths=scenMonthly>0?Math.ceil(remain/scenMonthly):0;
+    return `<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Оборот ${Math.round(oborot/1000)}к/міс</div>
+      <div style="font-size:16px;font-weight:700;color:var(--amber)">${scenMonths>0?scenMonths+' міс.':'—'}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('realty-scenarios').innerHTML=html;
+}
+
 // ══════════ INIT ══════════
 renderPayments();
 loadPnl();
 renderClients();
+realtyLoad();
 // Перевіряємо сповіщення при відкритті (тільки якщо вже дозволено)
 try{if('Notification' in window&&Notification.permission==='granted'){notifEnabled=true;document.getElementById('notif-btn').style.color='var(--green)';checkNotifications();}}catch(e){}
 </script>
