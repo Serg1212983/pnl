@@ -1148,7 +1148,12 @@ const NAME_MAP = {
   'лисік олена вікторівна': 'cp3',
   'лисік': 'cp3',
   'могилюк анжела олексіївна': 'cp4',
+  'могилюк анжела': 'cp4',
   'могилюк': 'cp4',
+  // Осак — ігноруємо свідомо
+  'осак наталія єрнестівна': null,
+  'осак наталія': null,
+  'осак': null,
   'довжанин оксана іванівна (маг."софія")': 'cp5',
   'довжанин': 'cp5',
 };
@@ -1179,7 +1184,16 @@ function importFromExcel(e){
 
       rows.forEach(row=>{
         if(!row||row.length<2) return;
-        let raw=String(row[0]||'').trim();
+
+        // В файлі 1С: колонка 0 порожня, колонка 1 = назва, колонка 2 = сума
+        // Шукаємо першу непорожню колонку з текстом (назва клієнта)
+        let nameCol=-1, raw='';
+        for(let i=0;i<Math.min(row.length,3);i++){
+          const v=String(row[i]||'').trim();
+          if(v.length>3&&isNaN(parseFloat(v))){nameCol=i;raw=v;break;}
+        }
+        if(nameCol===-1||!raw) return;
+
         raw=raw.replace(/^ФОП\s+/i,'').trim();
         const key=raw.toLowerCase().trim();
         if(!key||key==='контрагент'||key==='підсумок'||key==='итого'||key==='всього') return;
@@ -1191,14 +1205,15 @@ function importFromExcel(e){
           const surname=key.split(/\s+/)[0];
           const found=Object.keys(NAME_MAP).find(k=>k.split(/\s+/)[0]===surname);
           if(found) clientId=NAME_MAP[found];
-          else unmatched.push(raw); // логуємо не знайдені
+          else unmatched.push(raw);
         }
 
         if(clientId===null) return;
         if(!clientId) return;
 
+        // Шукаємо суму — перше число > 100 після колонки з назвою
         let amount=0;
-        for(let i=1;i<row.length;i++){
+        for(let i=nameCol+1;i<row.length;i++){
           const val=String(row[i]||'').replace(/\s/g,'').replace(',','.').trim();
           const num=parseFloat(val);
           if(!isNaN(num)&&num>100){amount=num;break;}
