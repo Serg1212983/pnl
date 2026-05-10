@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AVANTI — Дашборд</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
   --bg:#080b10; --s1:#0d1117; --s2:#141922; --s3:#1c2333;
@@ -474,7 +475,7 @@ select.inp option{background:var(--s2);}
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="broadcastViber('27')">📱 Близьким 27-го</button>
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="broadcastViber('30')">📱 Всім 30-го</button>
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" onclick="document.getElementById('excel-inp').click()">📊 З Excel (1С)</button>
-    <input type="file" id="excel-inp" accept=".xlsx,.xls,.csv" style="display:none" onchange="importFromExcel(event)">
+    <input type="file" id="excel-inp" accept=".xlsx,.xls" style="display:none" onchange="importFromExcel(event)">
     <button class="btn btn-ghost" style="padding:8px 16px;font-size:12px;" id="notif-btn" onclick="toggleNotifications()">🔔 Сповіщення</button>
   </div>
 
@@ -624,6 +625,12 @@ const BUILT_IN={
     {id:'c19',name:'ФОП Бісун',phone:'',group:'g2'},
     {id:'c19b',name:'ФОП Холод',phone:'',group:'g2'},
     {id:'c19c',name:'ФОП Копос',phone:'',group:'g2'},
+    // Потенційні клієнти (слідкуємо чи вийдуть на 20к)
+    {id:'cp1',name:'Балега',phone:'',potential:true},
+    {id:'cp2',name:'Голубка',phone:'',potential:true},
+    {id:'cp3',name:'Лисік',phone:'',potential:true},
+    {id:'cp4',name:'Могилюк',phone:'',potential:true},
+    {id:'cp5',name:'Довжанин (маг.Софія)',phone:'',potential:true},
   ],
 };
 let DB=(function(){const s=load();return{pnl:{...BUILT_IN.pnl,...(s.pnl||{})},payments:s.payments||BUILT_IN.payments,clients:s.clients||BUILT_IN.clients,cliData:s.cliData||{}};})();
@@ -964,6 +971,38 @@ function renderClients(){
     </div>`;
   });
 
+  // Потенційні клієнти — окремий блок внизу
+  const potentials=DB.clients.filter(c=>c.potential&&!rendered.has(c.id));
+  if(potentials.length>0){
+    html+=`<div style="margin-top:16px;margin-bottom:8px;padding:10px 14px;background:rgba(255,255,255,.03);border-radius:10px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:4px;">👁 Потенційні клієнти</div>
+      <div style="font-size:12px;color:var(--muted)">Слідкуємо чи вийдуть на 20 000₴ (ACTIVE)</div>
+    </div>`;
+    potentials.forEach((c,i)=>{
+      rendered.add(c.id);
+      const d=data[c.id]||{h1:0,h2:0};
+      const total=(d.h1||0)+(d.h2||0);
+      const toActive=Math.max(0,20000-total);
+      const pct20=Math.min(Math.round(total/20000*100),100);
+      if(total>0) totalOborot+=total;
+      html+=`<div class="client-card" style="border-left:3px solid rgba(255,255,255,.1);">
+        <div class="client-top">
+          <span class="client-name" style="color:var(--muted)">${c.name}</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="cat-badge cat-none">Потенційний</span>
+            <span class="client-total" style="color:${total>0?'var(--text)':'var(--muted)'}">${total>0?fmt(total):'0₴'}</span>
+          </div>
+        </div>
+        <div class="client-halves">
+          <div class="half-inp-wrap"><div class="half-label">1–15 число</div><input class="inp" type="number" value="${d.h1||''}" placeholder="0" oninput="updateCli('${c.id}','h1',this.value)"></div>
+          <div class="half-inp-wrap"><div class="half-label">16–30 число</div><input class="inp" type="number" value="${d.h2||''}" placeholder="0" oninput="updateCli('${c.id}','h2',this.value)"></div>
+        </div>
+        ${total>0?`<div style="margin-top:6px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;"><span>До ACTIVE (20к): ${fmt(toActive)}</span><span>${pct20}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct20}%;background:var(--muted)"></div></div></div>`:''}
+        <button style="margin-top:8px;padding:4px 10px;border-radius:6px;border:1px solid rgba(251,113,133,.2);background:transparent;color:var(--red);font-size:11px;cursor:pointer;" onclick="deleteCli('${c.id}')">✕</button>
+      </div>`;
+    });
+  }
+
   document.getElementById('cli-list').innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--muted)">Немає клієнтів</div>';
   document.getElementById('cli-count').textContent=activeCount;
   document.getElementById('cli-total').textContent=fmt(totalOborot);
@@ -1059,103 +1098,138 @@ function closeBroadcast(){document.getElementById('broadcast-overlay').classList
 // ── EXCEL IMPORT ──
 // Таблиця зіставлення назв 1С → id клієнта в дашборді
 const NAME_MAP = {
+  // Група Немеш
   'немеш': 'c1',
+  'петрище яна іванівна': 'c1b',
   'петрище': 'c1b',
+  // Окремі клієнти
   'рущак': 'c2',
   'лендел': 'c3',
   'білак': 'c4',
+  'костак василь юрійович': 'c5',
   'костак': 'c5',
   'козушко': 'c6',
+  'цибарь вікторія еміліївна': 'c7',
   'цибарь': 'c7',
   'крьока': 'c8',
   'папарига': 'c9',
+  'гоєр олександра василівна': 'c10',
   'гоєр': 'c10',
+  'думен марія василівна': 'c11',
   'думен': 'c11',
+  'морозько олександр олександрович': 'c12',
   'морозько': 'c12',
+  'сятиня марина василівна': 'c13',
   'сятиня': 'c13',
+  'кричфалушій вікторія василівна': 'c14',
   'кричфалушій': 'c14',
   'кричфалуші': 'c14',
   'худенко': 'c17',
   'іжакевич': 'c18',
-  // Прислупська - всі адреси → окремі записи групи g3
+  // Група Прислупська
+  'прислупська мар\'яна': 'c16a',
   'прислупська': 'c16a',
-  // Сабов - основний і адреси
+  // Група Сабов (4 магазини)
   'сабов гейза гейзович (с.бедевля)': 'c14b',
   'сабов гейза гейзович (с.вишково)': 'c14c',
   'сабов гейза гейзович (смт.буштино)': 'c14d',
   'сабов гейза гейзович': 'c14a',
   'сабов': 'c14a',
-  // Бісун група
+  // Група Бісун
   'бісун': 'c19',
   'холод': 'c19b',
+  'копос яна юріївна (подарунковий)': 'c19c',
+  'копос яна юріївна': 'c19c',
   'копос': 'c19c',
-  // Осак — ігноруємо (оптовий, окремі умови)
-  'осак наталія': null,
-  'осак': null,
+  'балега михайло михайлович': 'cp1',
+  'балега': 'cp1',
+  'голубка іван іванович': 'cp2',
+  'голубка': 'cp2',
+  'лисік олена вікторівна': 'cp3',
+  'лисік': 'cp3',
+  'могилюк анжела олексіївна': 'cp4',
+  'могилюк': 'cp4',
+  'довжанин оксана іванівна (маг."софія")': 'cp5',
+  'довжанин': 'cp5',
 };
 
 function importFromExcel(e){
   const file=e.target.files[0];if(!file)return;
   document.getElementById('excel-hint').style.display='block';
+  toast('⏳ Читаю файл...');
+
   const reader=new FileReader();
   reader.onload=ev=>{
     try{
-      const text=ev.target.result;
-      const lines=text.split('\n').filter(l=>l.trim());
-      let matched=0, skipped=0;
+      // Читаємо xlsx через SheetJS
+      const data=new Uint8Array(ev.target.result);
+      const workbook=XLSX.read(data,{type:'array'});
+
+      // Беремо перший аркуш
+      const sheetName=workbook.SheetNames[0];
+      const sheet=workbook.Sheets[sheetName];
+
+      // Конвертуємо в масив рядків
+      const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false});
+
+      let matched=0;
+      const unmatched=[];
       if(!DB.cliData[cliKey()]) DB.cliData[cliKey()]={};
       const today=new Date().getDate();
 
-      lines.forEach(line=>{
-        const cols=line.split(/[;\t]/);
-        if(cols.length<2) return;
-
-        // Очищаємо назву
-        let raw=cols[0].replace(/"/g,'').trim();
+      rows.forEach(row=>{
+        if(!row||row.length<2) return;
+        let raw=String(row[0]||'').trim();
         raw=raw.replace(/^ФОП\s+/i,'').trim();
         const key=raw.toLowerCase().trim();
+        if(!key||key==='контрагент'||key==='підсумок'||key==='итого'||key==='всього') return;
 
-        // Пропускаємо рядки без суми або заголовки
-        if(key==='контрагент'||key==='підсумок'||key==='итого'||key==='') return;
-
-        // Знаходимо id по таблиці
         let clientId=null;
-
-        // Спочатку шукаємо точний збіг
         if(NAME_MAP.hasOwnProperty(key)){
           clientId=NAME_MAP[key];
         } else {
-          // Шукаємо по першому слову (прізвищу)
           const surname=key.split(/\s+/)[0];
-          const mapKey=Object.keys(NAME_MAP).find(k=>k.startsWith(surname));
-          if(mapKey) clientId=NAME_MAP[mapKey];
+          const found=Object.keys(NAME_MAP).find(k=>k.split(/\s+/)[0]===surname);
+          if(found) clientId=NAME_MAP[found];
+          else unmatched.push(raw); // логуємо не знайдені
         }
 
-        if(clientId===null) return; // null = свідомо ігноруємо (Осак)
-        if(!clientId){ return; } // не знайдено
+        if(clientId===null) return;
+        if(!clientId) return;
 
-        // Знаходимо суму — шукаємо перше число > 100
-        const nums=cols.slice(1).map(c=>{
-          const clean=c.replace(/"/g,'').replace(/\s/g,'').replace(',','.').trim();
-          return parseFloat(clean);
-        }).filter(n=>!isNaN(n)&&n>100);
-
-        if(!nums.length) return;
+        let amount=0;
+        for(let i=1;i<row.length;i++){
+          const val=String(row[i]||'').replace(/\s/g,'').replace(',','.').trim();
+          const num=parseFloat(val);
+          if(!isNaN(num)&&num>100){amount=num;break;}
+        }
+        if(amount===0) return;
 
         if(!DB.cliData[cliKey()][clientId]) DB.cliData[cliKey()][clientId]={h1:0,h2:0};
-        // До 15-го — записуємо в h1, після — в h2
-        if(today<=15) DB.cliData[cliKey()][clientId].h1=nums[0];
-        else DB.cliData[cliKey()][clientId].h2=nums[0];
+        if(today<=15) DB.cliData[cliKey()][clientId].h1=amount;
+        else DB.cliData[cliKey()][clientId].h2=amount;
         matched++;
       });
 
       saveDB();renderClients();
-      toast(matched>0
-        ?`✅ Завантажено ${matched} клієнтів з Excel!`
-        :'⚠️ Клієнтів не знайдено. Збережи файл як .xlsx і спробуй ще раз');
-    }catch(err){toast('❌ Помилка: '+err.message);}
+      if(matched>0){
+        let msg=`✅ Завантажено ${matched} клієнтів!`;
+        if(unmatched.length>0){
+          msg+=`\n\nНе розпізнано (${unmatched.length}):\n`+unmatched.join('\n');
+          alert(msg);
+        } else {
+          toast(msg);
+        }
+      } else {
+        const names=rows.slice(0,25).map(r=>String(r[0]||'').trim()).filter(Boolean);
+        alert('⚠️ Клієнтів не знайдено.\n\nНазви у файлі:\n'+names.join('\n'));
+      }
+    }catch(err){
+      console.error(err);
+      toast('❌ Помилка читання файлу: '+err.message);
+    }
   };
-  reader.readAsText(file,'utf-8');
+  reader.readAsArrayBuffer(file);
   e.target.value='';
 }
 
