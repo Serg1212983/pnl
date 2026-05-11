@@ -1014,28 +1014,29 @@ function getForecast(cid){
 }
 
 function drawMiniChart(history){
-  const max=Math.max(...history.map(h=>h.total),1);
-  const w=120,h=36;
-  const pts=history.map((d,i)=>{
-    const x=i*(w/(history.length-1));
-    const y=h-(d.total/max*(h-4))-2;
-    return `${x},${y}`;
-  }).join(' ');
-  const bars=history.map((d,i)=>{
-    const x=i*(w/(history.length-1));
-    const bh=d.total/max*(h-4);
-    return `<rect x="${x-4}" y="${h-bh-2}" width="8" height="${bh}" rx="2" fill="rgba(74,222,128,${d.total>0?'0.3':'0.05'})"/>
-            <title>${d.month}: ${d.total>0?Math.round(d.total/1000)+'k₴':'0'}</title>`;
-  }).join('');
-  return `<svg width="${w}" height="${h}" style="overflow:visible">
-    ${bars}
-    <polyline points="${pts}" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/>
-    ${history.map((d,i)=>{
-      const x=i*(w/(history.length-1));
+  try{
+    if(!history||history.length<2) return '';
+    const max=Math.max(...history.map(h=>h.total),1);
+    const w=120,h=36;
+    const step=w/(history.length-1);
+    const pts=history.map((d,i)=>{
+      const x=i*step;
+      const y=h-(d.total/max*(h-4))-2;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    const bars=history.map((d,i)=>{
+      const x=i*step;
+      const bh=Math.max(0,d.total/max*(h-4));
+      return `<rect x="${(x-3).toFixed(1)}" y="${(h-bh-2).toFixed(1)}" width="6" height="${bh.toFixed(1)}" rx="2" fill="rgba(74,222,128,${d.total>0?'0.3':'0.05'})"/>`;
+    }).join('');
+    const dots=history.map((d,i)=>{
+      if(!d.total) return '';
+      const x=i*step;
       const cy=h-(d.total/max*(h-4))-2;
-      return d.total>0?`<circle cx="${x}" cy="${cy}" r="2.5" fill="var(--green)"/>`:'';
-    }).join('')}
-  </svg>`;
+      return `<circle cx="${x.toFixed(1)}" cy="${cy.toFixed(1)}" r="2.5" fill="var(--green)"/>`;
+    }).join('');
+    return `<svg width="${w}" height="${h}" style="overflow:visible">${bars}<polyline points="${pts}" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/>${dots}</svg>`;
+  }catch(e){return '';}
 }
 
 function getViberTemplate(cat, total, diff, mon, half1, day){
