@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVANTI Cosmetics — Електронні каталоги</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080b10;--s1:#0d1117;--s2:#141922;--border:rgba(255,255,255,.07);--text:#e8f0ff;--muted:rgba(232,240,255,.4);--cyan:#00d4ff;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.header{background:linear-gradient(135deg,#080b10,#0d1825);border-bottom:1px solid rgba(0,212,255,.15);padding:24px 20px;text-align:center;}
+.logo{font-family:'Unbounded',sans-serif;font-size:24px;font-weight:700;color:#00d4ff;letter-spacing:2px;margin-bottom:4px;text-shadow:0 0 30px rgba(0,212,255,.4);}
+.logo-sub{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.date-badge{display:inline-block;padding:4px 16px;border-radius:99px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);font-size:11px;color:#00d4ff;}
+.info-wrap{max-width:960px;margin:16px auto;padding:0 16px;}
+.info-box{padding:12px 16px;border-radius:10px;font-size:12px;line-height:1.6;display:flex;gap:10px;align-items:flex-start;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);}
+.controls{max-width:960px;margin:12px auto;padding:0 16px;display:flex;gap:8px;flex-wrap:wrap;}
+.search-inp{flex:1;min-width:180px;background:var(--s2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none;}
+.search-inp:focus{border-color:#00d4ff;}
+.cat-sel{background:var(--s2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 14px;outline:none;cursor:pointer;}
+.cat-sel option{background:var(--s2);}
+.stats-bar{max-width:960px;margin:0 auto 12px;padding:0 16px;display:flex;gap:16px;font-size:12px;color:var(--muted);}
+.stats-bar span{color:var(--text);font-weight:700;}
+.section-label{max-width:960px;margin:20px auto 8px;padding:0 16px;font-family:'Unbounded',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,212,255,.5);}
+.section-sub{max-width:960px;margin:-4px auto 10px;padding:0 16px;font-size:12px;color:var(--muted);}
+.grid{max-width:960px;margin:0 auto;padding:0 16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.cat-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;transition:all .2s;position:relative;overflow:hidden;}
+.cat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,#00d4ff);opacity:.7;}
+.cat-card:hover{border-color:rgba(0,212,255,.3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.card-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);}
+.card-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;}
+.badge-pdf{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.2);}
+.badge-pptx{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
+.badge-site{background:rgba(129,140,248,.1);color:#818cf8;border:1px solid rgba(129,140,248,.2);}
+.card-name{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;line-height:1.3;}
+.card-cat{font-size:11px;color:var(--muted);margin-top:2px;}
+.card-desc{font-size:12px;color:rgba(232,240,255,.6);line-height:1.5;flex:1;}
+.card-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:all .15s;text-decoration:none;}
+.btn-open{background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(0,212,255,.08));color:#00d4ff;border:1px solid rgba(0,212,255,.25);}
+.btn-open:hover{background:linear-gradient(135deg,rgba(0,212,255,.25),rgba(0,212,255,.15));}
+.btn-pptx{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(245,158,11,.08));color:#f59e0b;border:1px solid rgba(245,158,11,.25);}
+.btn-site{background:rgba(129,140,248,.12);color:#818cf8;border:1px solid rgba(129,140,248,.25);}
+.btn-site:hover{background:rgba(129,140,248,.2);}
+.footer{text-align:center;padding:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:20px;}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">AVANTI COSMETICS</div>
+  <div class="logo-sub">Офіційний партнер імпортерів професійної косметики</div>
+  <div class="date-badge">📚 Електронні каталоги · 2026</div>
+</div>
+
+<div class="info-wrap">
+  <div class="info-box">
+    <span>💡</span>
+    <span>Натисніть на кнопку бренду щоб відкрити електронний каталог. Каталоги відкриваються прямо в браузері — без завантаження.</span>
+  </div>
+</div>
+
+<div class="controls">
+  <input class="search-inp" type="text" placeholder="🔍 Пошук бренду..." oninput="filterCards(this.value)">
+  <select class="cat-sel" onchange="filterByGroup(this.value)">
+    <option value="all">Всі категорії</option>
+    <option value="hair">Волосся</option>
+    <option value="nail">Нігті</option>
+    <option value="face">Обличчя</option>
+    <option value="gift">🎁 Подарунки</option>
+  </select>
+</div>
+
+<div class="stats-bar">Каталогів: <span id="cnt-shown">22</span> з <span>25</span> брендів</div>
+
+<!-- ══ ВОЛОССЯ ══ -->
+<div class="section-label" id="lbl-hair">💇 Волосся</div>
+<div class="grid" id="grid-hair">
+
+  <div class="cat-card" data-group="hair" data-name="deeply">
+    <div class="card-top"><div class="card-icon">🌿</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Deeply</div><div class="card-cat">Волосся · Україна</div></div>
+    <div class="card-desc">Безсульфатні серії, відновлення, холодна реконструкція. Хіт продажів.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1XRZ3ZS-ZXUL6vLWpeEU15PY6y3sXRm4b/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="echosline echos">
+    <div class="card-top"><div class="card-icon">🍃</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">ECHOSline</div><div class="card-cat">Волосся · Італія</div></div>
+    <div class="card-desc">Vegan серії без сульфатів та парабенів. Середній сегмент.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1q30ufRqcq9aonadwpM7kaZDQ4BcdCMEc/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="emmebi emmebi italia" style="--accent:#818cf8;">
+    <div class="card-top"><div class="card-icon">🇮🇹</div><span class="card-badge badge-site">Сайт бренду</span></div>
+    <div><div class="card-name">EMMEBI Italia</div><div class="card-cat">Волосся · Преміум · Італія</div></div>
+    <div class="card-desc">Beauty Experience. Snail slime серія. Вище середнього сегменту. 30+ років на ринку.</div>
+    <a class="card-btn btn-site" href="https://sites.google.com/view/emmebi/" target="_blank">🌐 Офіційний сайт бренду</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="cehko ehko">
+    <div class="card-top"><div class="card-icon">🇩🇪</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">C:EHKO</div><div class="card-cat">Волосся · Німеччина</div></div>
+    <div class="card-desc">Німецька якість з 1923 року. Професійна хімія та догляд за волоссям.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1qMpTl4-kDVJNsZRvSZLlVn2OdmaBJuVf/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="bbcos bb cos">
+    <div class="card-top"><div class="card-icon">🇮🇹</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Bbcos</div><div class="card-cat">Волосся · Італія</div></div>
+    <div class="card-desc">Популярна в Україні. Широкий асортимент для всіх типів волосся.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1OarNx-cmUGoHEdnfpvJZLTs4-5TqJjgO/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="moroccanoil moroccan oil">
+    <div class="card-top"><div class="card-icon">🌺</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Moroccanoil</div><div class="card-cat">Волосся · Преміум · Ізраїль</div></div>
+    <div class="card-desc">Культовий бренд. Аргановий догляд. Відомий у всьому світі.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1jLmOfP4ZYoDmHWapJPImxsGiH_iUlL2V/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="gk hair gkhair">
+    <div class="card-top"><div class="card-icon">🇺🇸</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">GK Hair</div><div class="card-cat">Волосся · Преміум · США</div></div>
+    <div class="card-desc">Кератинові системи та преміум догляд за волоссям.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1b9f66fHFIG4PHdEI8sPThxhVxJj_jQOO/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="mielle">
+    <div class="card-top"><div class="card-icon">🇰🇷</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Mielle</div><div class="card-cat">Волосся · Корея</div></div>
+    <div class="card-desc">Корейський бренд. Кератин, відновлення, серії для кучерявого волосся.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1afKTGa0IYHc8PHWKXcvVI_Eaqn9TrLzt/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="daeng gi meo ri daeng">
+    <div class="card-top"><div class="card-icon">🇰🇷</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Daeng Gi Meo Ri</div><div class="card-cat">Волосся · Корея</div></div>
+    <div class="card-desc">Корейська марка №1. Традиційні рецепти + сучасні технології.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1SOK604yG7l-59kZ3KOD_XWKKll7DwDZ7/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="meloni">
+    <div class="card-top"><div class="card-icon">🌸</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Meloni</div><div class="card-cat">Волосся</div></div>
+    <div class="card-desc">Професійний догляд за волоссям.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1ZiwsZ2AZkFuWWV5fYTr7wDvf_eVTbo3c/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="mais laboratory">
+    <div class="card-top"><div class="card-icon">🖤</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">MAIS Laboratory</div><div class="card-cat">Волосся · Преміум</div></div>
+    <div class="card-desc">Преміум догляд. Інновації + натуральні компоненти + ритуальність.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/13ArF9BYPSmXKlsTfvnQshpal5h-nlzxE/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="rr line rrline">
+    <div class="card-top"><div class="card-icon">💫</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">RR Line</div><div class="card-cat">Волосся · Італія</div></div>
+    <div class="card-desc">Argan, Macadamia, Keratin серії. Доступна ціна, висока якість.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1Sb2LOckLX_el5jDQBEYJKkkvo3bW-qjF/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="palco professional">
+    <div class="card-top"><div class="card-icon">🇮🇹</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Palco Professional</div><div class="card-cat">Волосся · Італія</div></div>
+    <div class="card-desc">Basic, Hairwellness, Haircare, Hairstyle. Широкий асортимент.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1JtVr3VqMYXNUtSSUGD9GTK_ONRA6fctC/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="dermaskill">
+    <div class="card-top"><div class="card-icon">🧬</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Dermaskill</div><div class="card-cat">Волосся · Дермокосметика</div></div>
+    <div class="card-desc">Only One Cream 3в1. Науковий підхід до догляду за шкірою голови.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1x7dMZAZAsmaAZUIwvL4J7aZEE3D91LIu/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="ag skin agskin">
+    <div class="card-top"><div class="card-icon">🌱</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">AG Skin</div><div class="card-cat">Волосся · Дермокосметика · Україна</div></div>
+    <div class="card-desc">Дермокосметика для шкіри голови та волосся.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1DgTaQc35vpVuLqrMqlqRNJ34Vnj04NzW/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="hair" data-name="hedonic" style="--accent:#818cf8;">
+    <div class="card-top"><div class="card-icon">✨</div><span class="card-badge badge-site">Сайт бренду</span></div>
+    <div><div class="card-name">Hedonic</div><div class="card-cat">Волосся · Україна · GMP</div></div>
+    <div class="card-desc">Cruelty-free. Сертифіковано в Україні, Європі та Канаді. Рекомендовано Vogue, Elle.</div>
+    <a class="card-btn btn-site" href="https://hedonic.ua" target="_blank">🌐 Офіційний сайт бренду</a>
+  </div>
+
+</div>
+
+<!-- ══ НІГТІ ══ -->
+<div class="section-label" id="lbl-nail">💅 Нігті</div>
+<div class="grid" id="grid-nail">
+
+  <div class="cat-card" data-group="nail" data-name="pnb">
+    <div class="card-top"><div class="card-icon">💅</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">PNB</div><div class="card-cat">Нігті · Гель-лаки</div></div>
+    <div class="card-desc">Топовий бренд гель-лаків. Великий вибір кольорів та серій.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1xgDBP5K5Lx9YVEWtIXzvRrmdUibK7vp5/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="nail" data-name="adore">
+    <div class="card-top"><div class="card-icon">💜</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Adore</div><div class="card-cat">Нігті · Гель-лаки</div></div>
+    <div class="card-desc">Якісні гель-лаки з широкою палітрою кольорів.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1lkqy6eMchavF9E_s2l95FwYkhkgyM8T-/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="nail" data-name="siller" style="--accent:#818cf8;">
+    <div class="card-top"><div class="card-icon">🔮</div><span class="card-badge badge-site">Сайт бренду</span></div>
+    <div><div class="card-name">Siller</div><div class="card-cat">Нігті · Гель-лаки · Україна</div></div>
+    <div class="card-desc">Преміум гель-лаки. 150+ відтінків. HEMA Free формула. Бази, топи, гелі.</div>
+    <a class="card-btn btn-site" href="https://siller.ua" target="_blank">🌐 Офіційний сайт бренду</a>
+  </div>
+
+</div>
+
+<!-- ══ ОБЛИЧЧЯ ══ -->
+<div class="section-label" id="lbl-face">✨ Обличчя</div>
+<div class="grid" id="grid-face">
+
+  <div class="cat-card" data-group="face" data-name="robeauty ro beauty">
+    <div class="card-top"><div class="card-icon">🧪</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Robeauty</div><div class="card-cat">Обличчя · Anti-Age · Україна</div></div>
+    <div class="card-desc">Науковий anti-age бренд. ISO 22716 (GMP). Мікроголки, пептиди, ретинол.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1p5ofx03eMH2tuCqA9pe9pLgeODjqX12w/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="face" data-name="bourjois">
+    <div class="card-top"><div class="card-icon">🇫🇷</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Bourjois</div><div class="card-cat">Обличчя · Декоративна косметика · Франція</div></div>
+    <div class="card-desc">Французька декоративна косметика. Тональні засоби, рум'яна, помади.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/11fShYwHe3hC0AiXuc0QqZ5v-i3LKRjVn/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="face" data-name="lumene" style="--accent:#f59e0b;">
+    <div class="card-top"><div class="card-icon">🇫🇮</div><span class="card-badge badge-pptx">PPTX</span></div>
+    <div><div class="card-name">Lumene</div><div class="card-cat">Обличчя · Фінляндія</div></div>
+    <div class="card-desc">Скандинавська косметика. Натуральні інгредієнти. Догляд та декоративна косметика.</div>
+    <a class="card-btn btn-pptx" href="https://docs.google.com/presentation/d/134ERtnoEgp7mH__DHqY6cNTAAMO6yn8e/edit" target="_blank">📊 Відкрити презентацію</a>
+  </div>
+
+  <div class="cat-card" data-group="face" data-name="max factor maxfactor">
+    <div class="card-top"><div class="card-icon">💄</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">Max Factor</div><div class="card-cat">Обличчя · Декоративна косметика</div></div>
+    <div class="card-desc">Класичний бренд декоративної косметики. Широкий асортимент.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/13VMX-WhGC4rM3zLU19GIZMVOCodNSDhb/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+</div>
+
+<!-- ══ ПОДАРУНКИ ══ -->
+<div class="section-label" id="lbl-gift">🎁 Преміум подарунки для бізнесу</div>
+<div class="section-sub">Для салонів, магазинів та майстрів — преміум подарунки для ваших клієнтів</div>
+<div class="grid" id="grid-gift">
+
+  <div class="cat-card" data-group="gift" data-name="apriori london">
+    <div class="card-top"><div class="card-icon">🎁</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">APRIORI London</div><div class="card-cat">Преміум подарунок · Великобританія</div></div>
+    <div class="card-desc">Подаруйте своїм клієнтам те, що вони точно не очікують. Еко-люкс зубна щітка, Red Dot Award 2020 — клієнт запам'ятає вас надовго.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1jDR4dG3Vh2tgjG-F2iChNamyEfO46_1I/view" target="_blank">📄 Відкрити каталог</a>
+  </div>
+
+  <div class="cat-card" data-group="gift" data-name="apriori інфогід">
+    <div class="card-top"><div class="card-icon">📋</div><span class="card-badge badge-pdf">PDF</span></div>
+    <div><div class="card-name">APRIORI — Інфогід</div><div class="card-cat">Для салонів · Магазинів · Майстрів</div></div>
+    <div class="card-desc">Ідеальний корпоративний подарунок для VIP-клієнтів. Аргументи для продажу, колекції, ціни — все для вашого бізнесу.</div>
+    <a class="card-btn btn-open" href="https://drive.google.com/file/d/1PDSKzJn-j7DrdEf_yNPHiDtaxLKd2hWw/view" target="_blank">📄 Відкрити інфогід</a>
+  </div>
+
+</div>
+
+<div class="footer">
+  © 2026 AVANTI Cosmetics · ФОП Гутій Сергій ·
+  <a href="avanti.html" style="color:#00d4ff;text-decoration:none;">Сайт</a> ·
+  <a href="avanti_pricelist.html" style="color:#00d4ff;text-decoration:none;">Прайс-лист</a>
+</div>
+
+<script>
+function filterCards(q){
+  q=q.toLowerCase().trim();
+  let shown=0;
+  document.querySelectorAll('.cat-card').forEach(c=>{
+    const match=!q||(c.dataset.name||'').includes(q);
+    c.classList.toggle('hidden',!match);
+    if(match)shown++;
+  });
+  document.getElementById('cnt-shown').textContent=shown;
+  ['hair','nail','face','gift'].forEach(g=>{
+    const grid=document.getElementById('grid-'+g);
+    const lbl=document.getElementById('lbl-'+g);
+    if(!grid)return;
+    const vis=[...grid.querySelectorAll('.cat-card')].some(c=>!c.classList.contains('hidden'));
+    grid.classList.toggle('hidden',!vis);
+    if(lbl)lbl.classList.toggle('hidden',!vis);
+  });
+}
+function filterByGroup(g){
+  let shown=0;
+  document.querySelectorAll('.cat-card').forEach(c=>{
+    const match=g==='all'||c.dataset.group===g;
+    c.classList.toggle('hidden',!match);
+    if(match)shown++;
+  });
+  document.getElementById('cnt-shown').textContent=shown;
+  ['hair','nail','face','gift'].forEach(gr=>{
+    const grid=document.getElementById('grid-'+gr);
+    const lbl=document.getElementById('lbl-'+gr);
+    const vis=g==='all'||gr===g;
+    if(grid)grid.classList.toggle('hidden',!vis);
+    if(lbl)lbl.classList.toggle('hidden',!vis);
+  });
+}
+</script>
+</body>
+</html>
