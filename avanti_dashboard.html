@@ -443,6 +443,36 @@ select.inp option{background:var(--s2);}
       <div class="prog-track" style="margin-top:12px"><div class="prog-fill" id="pnl-bar-reserve" style="background:#22d3ee;width:0%"></div></div>
     </div>
   </div>
+  <!-- Каса Travel & Office -->
+  <div class="card" style="margin-bottom:10px;">
+    <div class="sec-head" onclick="toggleSec('travel')">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:#fb923c"></div>
+        <span class="sec-name">Каса Travel & Office</span><span class="sec-target">3 500₴/міс · 2 цілі</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-family:'Unbounded',sans-serif;font-size:14px;color:#fb923c" id="pnl-total-travel">0₴</span>
+        <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(251,146,60,.1);color:#fb923c">фікс</span>
+        <span class="sec-arrow" id="arr-travel">▼</span>
+      </div>
+    </div>
+    <div class="sec-body" id="body-travel">
+      <div class="row"><div class="row-name">✈️ TravelStuff (обладнання Opel Zafira) <span class="badge badge-fixed">2 000₴/міс</span></div><div class="row-pct">2 000₴</div><div class="row-amt" style="color:#fb923c">2 000₴</div></div>
+      <div class="row"><div class="row-name">💻 OfficeStuff (ноутбук + телефон) <span class="badge badge-fixed">1 500₴/міс</span></div><div class="row-pct">1 500₴</div><div class="row-amt" style="color:#fb923c">1 500₴</div></div>
+      <div style="margin-top:10px;padding:12px;background:rgba(251,146,60,.06);border:1px solid rgba(251,146,60,.15);border-radius:10px;font-size:13px;">
+        <div style="color:var(--muted);font-size:11px;margin-bottom:8px;">🎯 Дві окремі цілі накопичення</div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">✈️ TravelStuff накопичено: <span style="color:#fb923c;font-weight:700" id="pnl-travel-total">0₴</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">💻 OfficeStuff накопичено: <span style="color:#fb923c;font-weight:700" id="pnl-office-total">0₴</span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid rgba(251,146,60,.1);">Разом цього місяця: <span style="color:#fb923c;font-weight:700">3 500₴</span></div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(251,146,60,.1);font-size:11px;color:var(--muted);line-height:1.7;">
+          ✈️ <b>TravelStuff</b>: обладнання Opel Zafira<br>
+          💻 <b>OfficeStuff</b>: ноутбук + телефон Redmi 13/14 Pro 5G<br>
+          📅 За рік: TravelStuff ~<b style="color:#fb923c">24 000₴</b> · OfficeStuff ~<b style="color:#fb923c">18 000₴</b>
+        </div>
+      </div>
+      <div class="prog-track" style="margin-top:12px"><div class="prog-fill" id="pnl-bar-travel" style="background:#fb923c;width:0%"></div></div>
+    </div>
+  </div>
 
   <!-- Summary -->
   <div class="card" style="padding:20px;margin-bottom:14px;">
@@ -710,7 +740,7 @@ select.inp option{background:var(--s2);}
 <script>
 const MONTHS=['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
 const now=new Date();
-const FIXED={orenda:10500,podatky:4400,fuel:4100,claude:980,chatgpt:300,azure:350,tg:150};
+const FIXED={orenda:10500,podatky:4400,fuel:4100,claude:980,chatgpt:300,azure:350,tg:150,travel:2000,office:1500};
 
 // ── STORAGE ──
 const SK='avanti_v1';
