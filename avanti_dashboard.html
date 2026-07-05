@@ -200,6 +200,26 @@ select.inp option{background:var(--s2);}
 }
 </style>
 </head>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBA3p-m2Bp62ci-yV8fU-MB6oHSvWuqLU0",
+    authDomain: "avanti-e8d85.firebaseapp.com",
+    databaseURL: "https://avanti-e8d85-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "avanti-e8d85",
+    storageBucket: "avanti-e8d85.firebasestorage.app",
+    messagingSenderId: "870720422070",
+    appId: "1:870720422070:web:246948094047ca0641e617"
+  };
+  let fbDB=null, fbReady=false, fbApplying=false;
+  try{
+    firebase.initializeApp(firebaseConfig);
+    fbDB=firebase.database();
+    fbReady=true;
+  }catch(e){ console.warn('Firebase init failed', e); }
+</script>
 <body>
 
 <!-- TAB BAR -->
@@ -767,7 +787,7 @@ const GOALS={travel:2000,office:1500}; // Каса Цілей: Подорожі 
 
 // ── STORAGE ──
 const SK='avanti_v1';
-const DATA_VERSION=11; // ← номер версії вшитих даних. Підвищується при кожному оновленні даних у файлі.
+const DATA_VERSION=12; // ← номер версії вшитих даних. Підвищується при кожному оновленні даних у файлі.
 function load(){try{return JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){return{};}}
 function save(d){try{localStorage.setItem(SK,JSON.stringify(d));}catch(e){}}
 const BUILT_IN={"pnl": {"2026-3": {"oborot": 1001547, "marzha": 186287, "log1": 5981, "log2": 4794, "log3": 2814, "log4": 4725, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}, "2026-4": {"oborot": 710575, "marzha": 123711.11, "marzhaPct": 17.41, "log1": 5876, "log2": 4564, "log3": 6499, "log4": 0, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}, "2026-5": {"oborot": 832350, "marzha": 160643.55, "marzhaPct": 19.3, "log1": 5044, "log2": 3758, "log3": 12212, "log4": 0, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}}, "payments": [{"id": "p1", "name": "Підписка Claude", "amount": 980, "day": 4, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "paid", "notes": "Claude AI"}, {"id": "p2", "name": "Microsoft Azure", "amount": 350, "day": 9, "cat": "📱 Зв'язок", "remind": 2, "type": "expense", "status": "paid", "notes": "Хмарний сервіс"}, {"id": "p3", "name": "Оренда складу", "amount": 10500, "day": 10, "cat": "🏠 Житло", "remind": 3, "type": "expense", "status": "paid", "notes": ""}, {"id": "p4", "name": "ChatGPT", "amount": 300, "day": 10, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "pending", "notes": ""}, {"id": "p5", "name": "Податки", "amount": 4400, "day": 13, "cat": "💸 Податки", "remind": 3, "type": "expense", "status": "paid", "notes": ""}, {"id": "p6", "name": "Оренда квартири Мукачево", "amount": 17600, "day": 15, "cat": "🏠 Житло", "remind": 2, "type": "income", "status": "pending", "notes": "Орендар"}, {"id": "p7", "name": "Комунальні від орендаря", "amount": 3000, "day": 16, "cat": "💡 Комуналка", "remind": 1, "type": "income", "status": "paid", "notes": "Мукачево"}, {"id": "p8", "name": "Telegram Premium", "amount": 150, "day": 17, "cat": "🎵 Підписки", "remind": 1, "type": "expense", "status": "pending", "notes": ""}, {"id": "p10", "name": "Checkbox", "amount": 250, "day": 21, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "pending", "notes": "РРО онлайн, 21 числа"}, {"id": "p9", "name": "Показники лічильників", "amount": 0, "day": 30, "cat": "📦 Інше", "remind": 3, "type": "reminder", "status": "pending", "notes": "Фото від орендаря"}], "clients": [{"id": "c1", "name": "Немеш", "phone": "", "group": "g1"}, {"id": "c1b", "name": "ФОП Петрище", "phone": "", "group": "g1"}, {"id": "c2", "name": "Рущак", "phone": ""}, {"id": "c3", "name": "Лендел", "phone": ""}, {"id": "c4", "name": "Білак", "phone": ""}, {"id": "c5", "name": "Костак", "phone": ""}, {"id": "c6", "name": "Козушко", "phone": ""}, {"id": "c7", "name": "Цибарь", "phone": ""}, {"id": "c8", "name": "Крьока", "phone": ""}, {"id": "c9", "name": "Папарига", "phone": ""}, {"id": "c10", "name": "Гоєр", "phone": ""}, {"id": "c11", "name": "Думен", "phone": ""}, {"id": "c12", "name": "Морозько Олександр", "phone": ""}, {"id": "c13", "name": "Сятиня", "phone": ""}, {"id": "c14", "name": "Кричфалушій", "phone": ""}, {"id": "c17", "name": "Худенко", "phone": ""}, {"id": "c18", "name": "Іжакевич", "phone": ""}, {"id": "c16a", "name": "Прислупська (маг.1)", "phone": "", "group": "g3"}, {"id": "c16b", "name": "Прислупська (маг.2)", "phone": "", "group": "g3"}, {"id": "c16c", "name": "Прислупська (маг.3)", "phone": "", "group": "g3"}, {"id": "c14a", "name": "Сабов", "phone": "", "group": "g4"}, {"id": "c14b", "name": "Сабов (с.Бедевля)", "phone": "", "group": "g4"}, {"id": "c14c", "name": "Сабов (с.Вишково)", "phone": "", "group": "g4"}, {"id": "c14d", "name": "Сабов (смт.Буштино)", "phone": "", "group": "g4"}, {"id": "c19", "name": "ФОП Бісун", "phone": "", "group": "g2"}, {"id": "c19b", "name": "ФОП Холод", "phone": "", "group": "g2"}, {"id": "c19c", "name": "ФОП Копос", "phone": "", "group": "g2"}], "cliData": {"2026-4": {"c10": {"h1": 11278.29, "h2": 0}, "c12": {"h1": 40170.85, "h2": 0}, "c14c": {"h1": 1083.76, "h2": 0}, "cp3": {"h1": 1956.2, "h2": 0}, "cp1": {"h1": 2517.72, "h2": 0}, "cp2": {"h1": 7040, "h2": 0}, "cp5": {"h1": 38472.32, "h2": 0}, "c11": {"h1": 8290.07, "h2": 0}, "c19c": {"h1": 9177.18, "h2": 0}, "c5": {"h1": 29230.66, "h2": 0}, "c14": {"h1": 42634.02, "h2": 0}, "c1b": {"h1": 2285.23, "h2": 0}, "c14a": {"h1": 9961.69, "h2": 0}, "c14b": {"h1": 2676.24, "h2": 0}, "c14d": {"h1": 1161.17, "h2": 0}, "c13": {"h1": 2535.3, "h2": 0}, "c7": {"h1": 17171.23, "h2": 0}, "c19": {"h1": 6542.73, "h2": 0}, "c16a": {"h1": 52136.74, "h2": 0}, "c19b": {"h1": 4515.46, "h2": 0}}}, "realty": {"goalUsd": 30000, "rate": 44.5, "startBalance": 152950}};
@@ -788,7 +808,12 @@ let DB=(function(){
   }
   return{pnl:{...BUILT_IN.pnl,...(s.pnl||{})},payments:s.payments||BUILT_IN.payments,clients:s.clients||BUILT_IN.clients,cliData:s.cliData||BUILT_IN.cliData||{},realty:s.realty||BUILT_IN.realty||{},_v:s._v};
 })();
-function saveDB(){DB._v=DATA_VERSION;save(DB);}
+function saveDB(){DB._v=DATA_VERSION;DB._ts=Date.now();save(DB);
+  // Синхронізація в хмару Firebase
+  if(fbReady && fbDB && !fbApplying){
+    try{ fbDB.ref('avanti').set({...DB}); }catch(e){ console.warn('cloud save fail',e); }
+  }
+}
 
 // ── НАДІЙНЕ ЗБЕРЕЖЕННЯ У ФАЙЛ ──
 function exportFile(){
@@ -1663,6 +1688,40 @@ renderClients();
 try{ initRealty(); realtyCalc(); }catch(e){}
 // Перевіряємо сповіщення при відкритті (тільки якщо вже дозволено)
 try{if('Notification' in window&&Notification.permission==='granted'){notifEnabled=true;document.getElementById('notif-btn').style.color='var(--green)';checkNotifications();}}catch(e){}
+
+// ══════════ FIREBASE СИНХРОНІЗАЦІЯ ══════════
+if(fbReady && fbDB){
+  // Слухаємо зміни з хмари в реальному часі
+  fbDB.ref('avanti').on('value', (snap)=>{
+    const cloud = snap.val();
+    if(!cloud) {
+      // хмара порожня — заливаємо поточні дані туди
+      try{ fbDB.ref('avanti').set({...DB, _ts:Date.now()}); }catch(e){}
+      return;
+    }
+    // Якщо хмарні дані новіші за локальні — застосовуємо їх
+    const localTs = DB._ts || 0;
+    const cloudTs = cloud._ts || 0;
+    if(cloudTs > localTs){
+      fbApplying = true;
+      DB = {
+        pnl: cloud.pnl || {},
+        payments: cloud.payments || [],
+        clients: cloud.clients || [],
+        cliData: cloud.cliData || {},
+        realty: cloud.realty || {},
+        _v: cloud._v || DATA_VERSION,
+        _ts: cloudTs
+      };
+      save(DB);
+      try{ initRealty(); renderPayments(); loadPnl(); renderClients(); realtyCalc(); }catch(e){}
+      fbApplying = false;
+      try{ toast('☁️ Синхронізовано з хмари'); }catch(e){}
+    }
+  });
+  // Індикатор що хмара підключена
+  console.log('✓ Firebase синхронізація активна');
+}
 </script>
 </body>
 </html>
