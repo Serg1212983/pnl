@@ -207,7 +207,6 @@ select.inp option{background:var(--s2);}
   <button class="tab-btn active" onclick="switchTab('payments',this)">📅 Платежі</button>
   <button class="tab-btn" onclick="switchTab('pnl',this)">📊 P&L</button>
   <button class="tab-btn" onclick="switchTab('clients',this)">👥 Клієнти</button>
-  <button class="tab-btn" onclick="switchTab('realty',this)">🏠 Нерухомість</button>
 </div>
 
 <!-- ══════════ TAB 1: PAYMENTS ══════════ -->
@@ -369,6 +368,7 @@ select.inp option{background:var(--s2);}
       <div class="row"><div class="row-name">ChatGPT <span class="badge badge-fixed">300₴</span></div><div class="row-pct" id="pp-chatgpt">—</div><div class="row-amt" style="color:var(--green)">300₴</div></div>
       <div class="row"><div class="row-name">Microsoft Azure <span class="badge badge-fixed">350₴</span></div><div class="row-pct" id="pp-azure">—</div><div class="row-amt" style="color:var(--green)">350₴</div></div>
       <div class="row"><div class="row-name">Telegram Premium <span class="badge badge-fixed">150₴</span></div><div class="row-pct" id="pp-tg">—</div><div class="row-amt" style="color:var(--green)">150₴</div></div>
+      <div class="row"><div class="row-name">Checkbox <span class="badge badge-fixed">250₴</span></div><div class="row-pct" id="pp-sub250">—</div><div class="row-amt" style="color:var(--green)">250₴</div></div>
       <div class="row"><div class="row-name">Інші <span class="badge badge-var">змінна</span></div><div class="row-pct" id="pp-other">—</div><div><input class="row-inp inp" type="number" id="pnl-other" placeholder="0" oninput="pnlRecalc()"></div></div>
       <div class="prog-track" style="margin-top:12px"><div class="prog-fill" id="pnl-bar-growth" style="background:var(--green);width:0%"></div></div>
     </div>
@@ -393,6 +393,33 @@ select.inp option{background:var(--s2);}
         <div style="color:var(--muted);font-size:11px;margin-bottom:6px;">Ціль: ~30 000$ на нерухомість</div>
         <div style="display:flex;justify-content:space-between;">Цього місяця: <span style="color:var(--amber);font-weight:700" id="pnl-comm-month">0₴</span></div>
         <div style="display:flex;justify-content:space-between;margin-top:4px;">Всього накопичено: <span style="color:var(--amber);font-weight:700" id="pnl-comm-total">0₴</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Каса Цілей -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="sec-head" onclick="toggleSec('goals')">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:#fb923c"></div>
+        <span class="sec-name">Каса Цілей</span><span class="sec-target">3 500₴/міс фікс</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-family:'Unbounded',sans-serif;font-size:14px;color:#fb923c" id="pnl-goals-month">0₴</span>
+        <span class="sec-arrow" id="arr-goals">▼</span>
+      </div>
+    </div>
+    <div class="sec-body" id="body-goals">
+      <div class="row"><div class="row-name">✈️ Подорожі <span class="badge badge-fixed">фіксована</span></div><div class="row-pct">2 000₴</div><div class="row-amt" style="color:#fb923c">2 000₴</div></div>
+      <div class="row"><div class="row-name">💻 Офіс (ноутбук+телефон) <span class="badge badge-fixed">фіксована</span></div><div class="row-pct">1 500₴</div><div class="row-amt" style="color:#a78bfa">1 500₴</div></div>
+      <div style="margin-top:10px;padding:12px;background:rgba(251,146,60,.06);border:1px solid rgba(251,146,60,.15);border-radius:10px;font-size:13px;">
+        <div style="color:var(--muted);font-size:11px;margin-bottom:8px;">🎯 Накопичення на цілі</div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">Цього місяця: <span style="color:#fb923c;font-weight:700" id="pnl-goals-month2">3 500₴</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">Всього накопичено: <span style="color:#fb923c;font-weight:700" id="pnl-goals-total">0₴</span></div>
+        <div style="padding-top:8px;border-top:1px solid rgba(251,146,60,.1);font-size:12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">✈️ Подорожі всього: <span style="color:#fb923c;font-weight:700" id="pnl-goals-travel-total">0₴</span></div>
+          <div style="display:flex;justify-content:space-between;">💻 Офіс всього: <span style="color:#a78bfa;font-weight:700" id="pnl-goals-office-total">0₴</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -443,46 +470,6 @@ select.inp option{background:var(--s2);}
       <div class="prog-track" style="margin-top:12px"><div class="prog-fill" id="pnl-bar-reserve" style="background:#22d3ee;width:0%"></div></div>
     </div>
   </div>
-  <!-- Каса Цілей -->
-  <div class="card" style="margin-bottom:10px;">
-    <div class="sec-head" onclick="toggleSec('goals')">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div style="width:10px;height:10px;border-radius:50%;background:#fb923c"></div>
-        <span class="sec-name">Каса Цілей</span><span class="sec-target">Подорожі + Офіс · 3 500₴/міс</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span style="font-family:'Unbounded',sans-serif;font-size:14px;color:#fb923c" id="pnl-total-goals">0₴</span>
-        <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(251,146,60,.1);color:#fb923c">фікс</span>
-        <span class="sec-arrow" id="arr-goals">▼</span>
-      </div>
-    </div>
-    <div class="sec-body" id="body-goals">
-      <div style="margin-bottom:14px;padding:12px;background:rgba(251,146,60,.06);border:1px solid rgba(251,146,60,.15);border-radius:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <span style="font-weight:700;color:#fb923c;font-size:14px;">✈️ Подорожі</span>
-          <span style="font-size:12px;color:#fb923c;font-weight:700;">2 000₴/міс</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;">Цього місяця: <span style="color:#fb923c;font-weight:700">2 000₴</span></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;">Всього накопичено: <span style="color:#fb923c;font-weight:700" id="pnl-travel-total">0₴</span></div>
-        <div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.7;">
-          🚗 Обладнання Opel Zafira: вібассейн, холодильник, матрац, подушки, стіл, стільці, плита, бокс на дах, кріплення велосипедів<br>📅 За рік ~<b style="color:#fb923c">24 000₴</b>
-        </div>
-        <div class="prog-track" style="margin-top:10px"><div class="prog-fill" id="pnl-bar-travel" style="background:#fb923c;width:0%"></div></div>
-      </div>
-      <div style="padding:12px;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);border-radius:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <span style="font-weight:700;color:#a78bfa;font-size:14px;">💻 Офіс</span>
-          <span style="font-size:12px;color:#a78bfa;font-weight:700;">1 500₴/міс</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;">Цього місяця: <span style="color:#a78bfa;font-weight:700">1 500₴</span></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;">Всього накопичено: <span style="color:#a78bfa;font-weight:700" id="pnl-office-total">0₴</span></div>
-        <div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.7;">
-          💻 Новий ноутбук + телефон Redmi 13/14 Pro 5G<br>📅 За рік ~<b style="color:#a78bfa">18 000₴</b>
-        </div>
-        <div class="prog-track" style="margin-top:10px"><div class="prog-fill" id="pnl-bar-office" style="background:#a78bfa;width:0%"></div></div>
-      </div>
-    </div>
-  </div>
 
   <!-- Summary -->
   <div class="card" style="padding:20px;margin-bottom:14px;">
@@ -491,11 +478,139 @@ select.inp option{background:var(--s2);}
     <div class="sum-row" style="padding-left:16px;"><div class="sum-name" style="font-size:12px;color:var(--muted)">· Обов'язкові</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-mn">0%</span><span class="sum-amt" style="color:var(--red);font-size:13px" id="ss-mand">0₴</span></div></div>
     <div class="sum-row" style="padding-left:16px;"><div class="sum-name" style="font-size:12px;color:var(--muted)">· Ріст</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-rs">0%</span><span class="sum-amt" style="color:var(--green);font-size:13px" id="ss-rising">0₴</span></div></div>
     <div class="sum-row"><div class="sum-name"><span class="sum-dot" style="background:var(--amber)"></span>Каса Комерція (25%)</div><div class="sum-vals"><span class="sum-pct">25%</span><span class="sum-amt" style="color:var(--amber)" id="ss-comm">0₴</span></div></div>
+    <div class="sum-row"><div class="sum-name"><span class="sum-dot" style="background:#fb923c"></span>Каса Цілей (фікс)</div><div class="sum-vals"><span class="sum-pct">3500₴</span><span class="sum-amt" style="color:#fb923c" id="ss-goals">0₴</span></div></div>
     <div class="sum-row"><div class="sum-name"><span class="sum-dot" style="background:var(--purple)"></span>Каса Життя (10%)</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-lf">0%</span><span class="sum-amt" style="color:var(--purple)" id="ss-life">0₴</span></div></div>
-    <div class="sum-row"><div class="sum-name"><span class="sum-dot" style="background:#22d3ee"></span>Каса Резерву (0.25% об.)</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-res">0%</span><span class="sum-amt" style="color:#22d3ee" id="ss-reserve">0₴</span></div></div>     <div class="sum-row"><div class="sum-name"><span class="sum-dot" style="background:#fb923c"></span>Каса Цілей (Подорожі + Офіс)</div><div class="sum-vals"><span class="sum-pct">фікс</span><span class="sum-amt" style="color:#fb923c" id="ss-goals">0₴</span></div></div>
+    <div class="sum-row"><div class="sum-name"><span class="sum-dot" style="background:#22d3ee"></span>Каса Резерву (0.25% об.)</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-res">0%</span><span class="sum-amt" style="color:#22d3ee" id="ss-reserve">0₴</span></div></div>
     <div class="sum-row sum-total"><div style="font-weight:700;font-size:14px;">Разом витрат</div><div class="sum-vals"><span class="sum-pct" id="ss-pct-all">0%</span><span class="sum-amt" id="ss-all">0₴</span></div></div>
     <div class="sum-row sum-total" style="background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15);"><div style="font-weight:700;font-size:14px;color:var(--green)">💰 Чистий прибуток</div><div class="sum-vals"><span class="sum-amt" style="font-size:18px;color:var(--green)" id="ss-net">0₴</span></div></div>
     <div class="donut-wrap"><svg id="donut-svg" width="110" height="110" viewBox="0 0 110 110"><circle cx="55" cy="55" r="44" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="14"/></svg><div id="donut-legend"></div></div>
+  </div>
+
+  <!-- Анютка (нагадування, не в розрахунках) -->
+  <div class="card" style="margin-bottom:14px;border:1px dashed rgba(236,72,153,.3);background:rgba(236,72,153,.03);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <div style="width:10px;height:10px;border-radius:50%;background:#ec4899"></div>
+      <span class="sec-name" style="color:#ec4899">💗 Анютка — нагадування</span>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
+      Це <b style="color:var(--text)">нагадування</b>, скільки дружина відкладає зі своєї зарплати. Не входить у розрахунки бізнесу.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div class="row"><div class="row-name">✈️ Подорожі</div><div class="row-amt" style="color:#ec4899">700₴</div></div>
+      <div class="row"><div class="row-name">🌴 Відпочинок</div><div class="row-amt" style="color:#ec4899">500₴</div></div>
+      <div class="row"><div class="row-name">🚗 Амортизація авто</div><div class="row-amt" style="color:#ec4899">1 500₴</div></div>
+      <div class="row"><div class="row-name">🏠 Сімейний бюджет <span class="badge badge-auto" id="anyutka-fam-badge">залежить від ЗП</span></div><div class="row-amt" style="color:#ec4899" id="anyutka-family">—</div></div>
+    </div>
+    <div style="margin-top:12px;padding:12px;background:rgba(236,72,153,.06);border:1px solid rgba(236,72,153,.15);border-radius:10px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Зарплата Анютки цього місяця <span style="color:#ec4899">(2% від обороту з PnL)</span>:</div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;color:#ec4899;" id="anyutka-zp-auto">0₴</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted);line-height:1.6;">
+        Сімейний бюджет: <b style="color:#ec4899">2 700₴</b> якщо ЗП ≥ 20 000 · <b style="color:#ec4899">1 700₴</b> якщо ЗП &lt; 20 000
+      </div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(236,72,153,.1);display:flex;justify-content:space-between;font-size:13px;">
+        <span style="color:var(--muted)">Разом відкласти:</span> <b style="color:#ec4899;font-size:15px" id="anyutka-total">—</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ НЕРУХОМІСТЬ (перенесено з окремої вкладки) ══ -->
+  <div style="display:flex;align-items:center;gap:12px;margin:24px 0 14px;padding-top:20px;border-top:1px solid var(--border);">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#fb923c,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:16px;">🏠</div>
+    <div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;">НЕРУХОМІСТЬ</div>
+      <div style="font-size:11px;color:var(--muted);">Трекер накопичення з каси комерції</div>
+    </div>
+  </div>
+
+  <!-- ЦІЛЬ -->
+  <div class="card" style="padding:18px 20px;margin-bottom:14px;">
+    <div class="section-title">🎯 Ціль</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Ціль ($)</div>
+        <input class="inp" type="number" id="re-goal-usd" placeholder="30000" value="30000" oninput="realtyCalc()">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Курс USD/UAH</div>
+        <input class="inp" type="number" id="re-rate" placeholder="43.6" value="43.6" step="0.1" oninput="realtyCalc()">
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;color:var(--muted);">Ціль в гривнях:</span>
+      <span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;color:#fb923c;" id="re-goal-uah">— ₴</span>
+    </div>
+  </div>
+
+  <!-- ПРОГРЕС -->
+  <div class="card" style="padding:18px 20px;margin-bottom:14px;">
+    <div class="section-title">📈 Прогрес</div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:13px;font-weight:600;">Накопичено до початку обліку</div>
+        <div style="font-size:11px;color:var(--muted);">Введи реальну суму станом зараз</div>
+      </div>
+      <input type="number" id="re-start-balance" class="inp" placeholder="0" style="width:130px;text-align:right;" value="0" oninput="realtyCalc()">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:13px;font-weight:600;">З каси комерції — цього місяця</div>
+        <div style="font-size:11px;color:var(--muted);">25% від маржі поточного місяця</div>
+      </div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;color:#fb923c;" id="re-from-pnl-month">— ₴</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:13px;font-weight:600;">З каси комерції — всього</div>
+        <div style="font-size:11px;color:var(--muted);">Накопичено за всі місяці з P&L</div>
+      </div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;color:#fb923c;" id="re-from-pnl">— ₴</div>
+    </div>
+
+    <div style="padding:12px 0 8px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Додаткові надходження (вручну)</div>
+      <div id="re-extras-list"></div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;" onclick="reAddExtra()">＋ Додати надходження</button>
+    </div>
+
+    <div style="margin-top:10px;padding:12px 14px;background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.12);border-radius:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:600;">Всього накопичено:</span>
+        <span style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;color:var(--green);" id="re-total-uah">— ₴</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;color:var(--muted);">В доларах:</span>
+        <span style="font-size:15px;font-weight:700;color:var(--cyan);" id="re-total-usd">— $</span>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px;">
+        <span>До цілі</span>
+        <span id="re-pct-text">0%</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" id="re-progress-bar" style="background:linear-gradient(90deg,#fb923c,#f59e0b);width:0%;transition:width .6s ease;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ПРОГНОЗ -->
+  <div class="card" style="padding:18px 20px;margin-bottom:14px;">
+    <div class="section-title">🔮 Прогноз</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="padding:12px;background:var(--s2);border-radius:10px;text-align:center;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Залишилось накопичити</div>
+        <div style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;color:#fb923c;" id="re-remain">— ₴</div>
+      </div>
+      <div style="padding:12px;background:var(--s2);border-radius:10px;text-align:center;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Місяців до цілі</div>
+        <div style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;color:var(--cyan);" id="re-months">— міс</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.02);border-radius:8px;font-size:12px;color:var(--muted);">
+      💡 Прогноз базується на середньому щомісячному накопиченні з каси комерції
+    </div>
   </div>
 
   <!-- buttons -->
@@ -565,109 +680,6 @@ select.inp option{background:var(--s2);}
 </div>
 
 <!-- ══════════ TAB 4: НЕРУХОМІСТЬ ══════════ -->
-<div class="tab-panel" id="tab-realty">
-
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-    <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#fb923c,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:18px;">🏠</div>
-    <div>
-      <div style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;">НЕРУХОМІСТЬ</div>
-      <div style="font-size:11px;color:var(--muted);">Трекер накопичення</div>
-    </div>
-  </div>
-
-  <!-- ЦІЛЬ -->
-  <div class="card" style="padding:18px 20px;margin-bottom:14px;">
-    <div class="section-title">🎯 Ціль</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Ціль ($)</div>
-        <input class="inp" type="number" id="re-goal-usd" placeholder="30000" value="30000" oninput="realtyCalc()">
-      </div>
-      <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Курс USD/UAH</div>
-        <input class="inp" type="number" id="re-rate" placeholder="43.6" value="43.6" step="0.1" oninput="realtyCalc()">
-      </div>
-    </div>
-    <div style="margin-top:12px;padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:12px;color:var(--muted);">Ціль в гривнях:</span>
-      <span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;color:#fb923c;" id="re-goal-uah">— ₴</span>
-    </div>
-  </div>
-
-  <!-- ПРОГРЕС -->
-  <div class="card" style="padding:18px 20px;margin-bottom:14px;">
-    <div class="section-title">📈 Прогрес</div>
-
-    <!-- Початковий залишок -->
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
-      <div>
-        <div style="font-size:13px;font-weight:600;">Накопичено до початку обліку</div>
-        <div style="font-size:11px;color:var(--muted);">Введи реальну суму станом зараз</div>
-      </div>
-      <input type="number" id="re-start-balance" class="inp" placeholder="0" style="width:130px;text-align:right;" value="0" oninput="realtyCalc()">
-    </div>
-        <div style="font-size:11px;color:var(--muted);">25% від маржі поточного місяця</div>
-      </div>
-      <div style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;color:#fb923c;" id="re-from-pnl-month">— ₴</div>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
-      <div>
-        <div style="font-size:13px;font-weight:600;">З каси комерції — всього</div>
-        <div style="font-size:11px;color:var(--muted);">Накопичено за всі місяці з P&L</div>
-      </div>
-      <div style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;color:#fb923c;" id="re-from-pnl">— ₴</div>
-    </div>
-
-    <!-- Додаткові накопичення -->
-    <div style="padding:12px 0 8px;">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Додаткові надходження (вручну)</div>
-      <div id="re-extras-list"></div>
-      <button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;" onclick="reAddExtra()">＋ Додати надходження</button>
-    </div>
-
-    <!-- Всього -->
-    <div style="margin-top:10px;padding:12px 14px;background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.12);border-radius:10px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13px;font-weight:600;">Всього накопичено:</span>
-        <span style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;color:var(--green);" id="re-total-uah">— ₴</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:12px;color:var(--muted);">В доларах:</span>
-        <span style="font-size:15px;font-weight:700;color:var(--cyan);" id="re-total-usd">— $</span>
-      </div>
-    </div>
-
-    <!-- Прогрес бар -->
-    <div style="margin-top:14px;">
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px;">
-        <span>До цілі</span>
-        <span id="re-pct-text">0%</span>
-      </div>
-      <div class="prog-track">
-        <div class="prog-fill" id="re-progress-bar" style="background:linear-gradient(90deg,#fb923c,#f59e0b);width:0%;transition:width .6s ease;"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ПРОГНОЗ -->
-  <div class="card" style="padding:18px 20px;margin-bottom:14px;">
-    <div class="section-title">🔮 Прогноз</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div style="padding:12px;background:var(--s2);border-radius:10px;text-align:center;">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Залишилось накопичити</div>
-        <div style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;color:#fb923c;" id="re-remain">— ₴</div>
-      </div>
-      <div style="padding:12px;background:var(--s2);border-radius:10px;text-align:center;">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Місяців до цілі</div>
-        <div style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;color:var(--cyan);" id="re-months">— міс</div>
-      </div>
-    </div>
-    <div style="margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.02);border-radius:8px;font-size:12px;color:var(--muted);">
-      💡 Прогноз базується на середньому щомісячному накопиченні з каси комерції
-    </div>
-  </div>
-
-</div>
 
 <!-- BROADCAST MODAL -->
 <div class="overlay" id="broadcast-overlay">
@@ -750,7 +762,8 @@ select.inp option{background:var(--s2);}
 <script>
 const MONTHS=['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
 const now=new Date();
-const FIXED={orenda:10500,podatky:4400,fuel:4100,claude:980,chatgpt:300,azure:350,tg:150,travel:2000,office:1500};
+const FIXED={orenda:10500,podatky:4400,fuel:4100,claude:980,chatgpt:300,azure:350,tg:150};
+const GOALS={travel:2000,office:1500}; // Каса Цілей: Подорожі + Офіс (ноутбук+телефон)
 
 // ── STORAGE ──
 const SK='avanti_v1';
@@ -767,6 +780,7 @@ const BUILT_IN={
     {id:'p6',name:'Оренда квартири Мукачево',amount:17600,day:15,cat:'🏠 Житло',remind:2,type:'income',status:'pending',notes:'Орендар'},
     {id:'p7',name:'Комунальні від орендаря',amount:3000,day:16,cat:'💡 Комуналка',remind:1,type:'income',status:'pending',notes:'Мукачево'},
     {id:'p8',name:'Telegram Premium',amount:150,day:17,cat:'🎵 Підписки',remind:1,type:'expense',status:'pending',notes:''},
+    {id:'p10',name:'Платіж 21-го',amount:250,day:21,cat:'📦 Інше',remind:2,type:'expense',status:'pending',notes:'Щомісячний'},
     {id:'p9',name:'Показники лічильників',amount:0,day:30,cat:'📦 Інше',remind:3,type:'reminder',status:'pending',notes:'Фото від орендаря'},
   ],
   clients:[
@@ -851,19 +865,23 @@ function realtyCalc(){
   // Starting balance
   const startBal = parseFloat(document.getElementById('re-start-balance').value)||0;
 
-  // Auto from P&L — current month
+  // Auto from P&L — current month (live з поля, або зі збереженого)
   const curKey = pnlKey();
   const curMonth = DB.pnl?.[curKey];
-  const curComm = curMonth?.marzha ? parseFloat(curMonth.marzha) * 0.25 : 0;
+  let curMarzha = nv('pnl-marzha'); // live значення з поля
+  if(!curMarzha && curMonth?.marzha) curMarzha = parseFloat(curMonth.marzha);
+  const curComm = curMarzha * 0.25;
   const curMonthEl = document.getElementById('re-from-pnl-month');
   if(curMonthEl) curMonthEl.textContent = Math.round(curComm).toLocaleString('uk-UA') + ' ₴';
 
-  // Auto from P&L — all months total
+  // Auto from P&L — all months total (поточний місяць — live, решта — збережене)
   let totalComm = 0;
   const pnlData = DB.pnl || {};
-  Object.values(pnlData).forEach(d => {
+  Object.entries(pnlData).forEach(([k,d]) => {
+    if(k===curKey) return; // поточний додамо окремо з live
     if(d && d.marzha) totalComm += parseFloat(d.marzha) * 0.25;
   });
+  totalComm += curComm; // live поточний місяць
   document.getElementById('re-from-pnl').textContent = Math.round(totalComm).toLocaleString('uk-UA') + ' ₴';
 
   // Extras
@@ -947,7 +965,6 @@ function switchTab(id,btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  if(id==='realty') initRealty();
 }
 
 // ── TOAST ──
@@ -1099,11 +1116,13 @@ function pnlRecalc(){
   const zp=ob*.02,vidp=ob*.0035,comm=mz*.25;
   const pension=ob*.0025; // 0.25% від обороту — Пенсійний фонд
   const tovar=nv('pnl-tovar'),noviTM=nv('pnl-noviTM'),mkt=nv('pnl-mkt'),other=nv('pnl-other');
-  const rising=tovar+noviTM+mkt+FIXED.claude+FIXED.chatgpt+FIXED.azure+FIXED.tg+other;
+  const sub250 = 250;
+  const rising=tovar+noviTM+mkt+FIXED.claude+FIXED.chatgpt+FIXED.azure+FIXED.tg+sub250+other;
   const mandatory=FIXED.orenda+FIXED.podatky+FIXED.fuel+log+zp;
   const growth=mandatory+rising;
   const life=17000+vidp;
-  const travelGoal=FIXED.travel;   const officeGoal=FIXED.office;   const travel=travelGoal+officeGoal;   const net=mz-growth-comm-life-pension-travel;
+  const goals=GOALS.travel+GOALS.office; // Каса Цілей: 3500₴/міс фікс
+  const net=mz-growth-comm-life-pension-goals;
 
   document.getElementById('pnl-log-sum').textContent=fmt(log);
   document.getElementById('pnl-amt-log').textContent=fmt(log);
@@ -1150,8 +1169,18 @@ function pnlRecalc(){
   document.getElementById('ss-comm').textContent=fmt(comm);
   document.getElementById('ss-life').textContent=fmt(life);
   document.getElementById('ss-reserve').textContent=fmt(pension);
-  document.getElementById('ss-all').textContent=fmt(growth+comm+life+pension);
+  document.getElementById('ss-all').textContent=fmt(growth+comm+life+pension+goals);
+  document.getElementById('ss-goals').textContent=fmt(goals);
   const sn=document.getElementById('ss-net');sn.textContent=fmt(net);sn.style.color=net>=0?'var(--green)':'var(--red)';
+
+  // goals (Каса Цілей) month + total накопичення
+  document.getElementById('pnl-goals-month').textContent=fmt(goals);
+  let goalsTot=0;Object.values(DB.pnl).forEach(d=>{if(d.oborot||d.marzha) goalsTot+=(GOALS.travel+GOALS.office);});
+  if(!DB.pnl[pnlKey()] && (ob||mz)) goalsTot+=goals;
+  document.getElementById('pnl-goals-total').textContent=fmt(goalsTot);
+  const gt=Object.values(DB.pnl).filter(d=>d.oborot||d.marzha).length + ((!DB.pnl[pnlKey()]&&(ob||mz))?1:0);
+  document.getElementById('pnl-goals-travel-total').textContent=fmt(gt*GOALS.travel);
+  document.getElementById('pnl-goals-office-total').textContent=fmt(gt*GOALS.office);
 
   // commerce total
   let tot=0;Object.values(DB.pnl).forEach(d=>tot+=(d.marzha||0)*.25);
@@ -1161,11 +1190,13 @@ function pnlRecalc(){
   // pension total накопичення за всі місяці
   let pensTot=0;Object.values(DB.pnl).forEach(d=>pensTot+=(d.oborot||0)*.0025);
   if(!DB.pnl[pnlKey()]) pensTot+=pension;
-  document.getElementById('pnl-pension-total').textContent=fmt(pensTot);    let monthsCount=Object.keys(DB.pnl).length;   if(!DB.pnl[pnlKey()]) monthsCount+=1;   const travelTot=monthsCount*travelGoal;   const officeTot=monthsCount*officeGoal;   document.getElementById('pnl-travel-total').textContent=fmt(travelTot);   document.getElementById('pnl-office-total').textContent=fmt(officeTot);   document.getElementById('pnl-total-goals').textContent=fmt(travel);   document.getElementById('ss-goals').textContent=fmt(travel);   barSet('pnl-bar-travel',travelTot/48000*100,100);   barSet('pnl-bar-office',officeTot/36000*100,100);
+  document.getElementById('pnl-pension-total').textContent=fmt(pensTot);
 
   drawDonut([{l:'Ріст',v:growth,c:'#4ade80'},{l:'Комерція',v:comm,c:'#f59e0b'},{l:'Життя',v:life,c:'#818cf8'},{l:'Резерв',v:pension,c:'#22d3ee'},{l:'Прибуток',v:Math.max(0,net),c:'#60a5fa'}]);
   // refresh realty if open
-  if(document.getElementById('tab-realty').classList.contains('active')) realtyCalc();
+  if(document.getElementById('re-from-pnl')) realtyCalc();
+  // оновити нагадування Анютка (ЗП = 2% від обороту місяця)
+  try{ anyutkaCalc(); }catch(e){}
 }
 
 function renderPnlMonths(){
@@ -1556,6 +1587,24 @@ setInterval(checkNotifications,3600000);
 function sendAllViber(){broadcastViber('15');}
 function sendNearViber(){broadcastViber('27');}
 
+// Анютка — нагадування (не в розрахунках бізнесу)
+function anyutkaCalc(){
+  // ЗП дружини = 2% від обороту поточного місяця (live з поля або зі збереженого PnL)
+  let ob=nv('pnl-oborot');
+  if(!ob){ const d=DB.pnl[pnlKey()]||{}; ob=d.oborot||0; }
+  const zp=ob*.02;
+  const zpEl=document.getElementById('anyutka-zp-auto');
+  if(zpEl) zpEl.textContent = zp>0 ? fmt(zp) : '0₴ (немає обороту за місяць)';
+  const family = zp>=20000 ? 2700 : 1700;
+  const famEl=document.getElementById('anyutka-family');
+  if(famEl) famEl.textContent=fmt(family);
+  const badge=document.getElementById('anyutka-fam-badge');
+  if(badge) badge.textContent = zp>=20000 ? 'ЗП ≥ 20к → 2700₴' : 'ЗП < 20к → 1700₴';
+  const total=700+500+1500+family;
+  const totEl=document.getElementById('anyutka-total');
+  if(totEl) totEl.textContent=fmt(total);
+}
+
 function openAddClient(){document.getElementById('cm-name').value='';document.getElementById('cm-phone').value='';document.getElementById('cli-modal').classList.add('open');}
 function closeAddClient(){document.getElementById('cli-modal').classList.remove('open');}
 function saveClient(){
@@ -1620,6 +1669,8 @@ function pp(id){return document.getElementById(id);}
 renderPayments();
 loadPnl();
 renderClients();
+// Нерухомість — відновити збережені ціль/курс/баланс (тепер у P&L)
+try{ initRealty(); }catch(e){}
 // Перевіряємо сповіщення при відкритті (тільки якщо вже дозволено)
 try{if('Notification' in window&&Notification.permission==='granted'){notifEnabled=true;document.getElementById('notif-btn').style.color='var(--green)';checkNotifications();}}catch(e){}
 </script>
