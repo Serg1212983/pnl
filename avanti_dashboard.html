@@ -767,10 +767,10 @@ const GOALS={travel:2000,office:1500}; // Каса Цілей: Подорожі 
 
 // ── STORAGE ──
 const SK='avanti_v1';
-const DATA_VERSION=8; // ← номер версії вшитих даних. Підвищується при кожному оновленні даних у файлі.
+const DATA_VERSION=11; // ← номер версії вшитих даних. Підвищується при кожному оновленні даних у файлі.
 function load(){try{return JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){return{};}}
 function save(d){try{localStorage.setItem(SK,JSON.stringify(d));}catch(e){}}
-const BUILT_IN={"pnl": {"2026-3": {"oborot": 1001547, "marzha": 186287, "log1": 5981, "log2": 4794, "log3": 2814, "log4": 4725, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}, "2026-4": {"oborot": 710575, "marzha": 123711.11, "marzhaPct": 17.41, "log1": 5876, "log2": 4564, "log3": 6499, "log4": 0, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}, "2026-5": {"oborot": 832350, "marzha": 160643.55, "marzhaPct": 19.3, "log1": 5044, "log2": 3758, "log3": 12212, "log4": 0, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}, "2026-6": {"oborot": 832350, "marzha": 160643.55, "marzhaPct": 19.3, "log1": 0, "log2": 0, "log3": 0, "log4": 0, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}}, "payments": [{"id": "p1", "name": "Підписка Claude", "amount": 980, "day": 4, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "paid", "notes": "Claude AI"}, {"id": "p2", "name": "Microsoft Azure", "amount": 350, "day": 9, "cat": "📱 Зв'язок", "remind": 2, "type": "expense", "status": "paid", "notes": "Хмарний сервіс"}, {"id": "p3", "name": "Оренда складу", "amount": 10500, "day": 10, "cat": "🏠 Житло", "remind": 3, "type": "expense", "status": "paid", "notes": ""}, {"id": "p4", "name": "ChatGPT", "amount": 300, "day": 10, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "pending", "notes": ""}, {"id": "p5", "name": "Податки", "amount": 4400, "day": 13, "cat": "💸 Податки", "remind": 3, "type": "expense", "status": "paid", "notes": ""}, {"id": "p6", "name": "Оренда квартири Мукачево", "amount": 17600, "day": 15, "cat": "🏠 Житло", "remind": 2, "type": "income", "status": "pending", "notes": "Орендар"}, {"id": "p7", "name": "Комунальні від орендаря", "amount": 3000, "day": 16, "cat": "💡 Комуналка", "remind": 1, "type": "income", "status": "paid", "notes": "Мукачево"}, {"id": "p8", "name": "Telegram Premium", "amount": 150, "day": 17, "cat": "🎵 Підписки", "remind": 1, "type": "expense", "status": "pending", "notes": ""}, {"id": "p10", "name": "Checkbox", "amount": 250, "day": 21, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "pending", "notes": "РРО онлайн, 21 числа"}, {"id": "p9", "name": "Показники лічильників", "amount": 0, "day": 30, "cat": "📦 Інше", "remind": 3, "type": "reminder", "status": "pending", "notes": "Фото від орендаря"}], "clients": [{"id": "c1", "name": "Немеш", "phone": "", "group": "g1"}, {"id": "c1b", "name": "ФОП Петрище", "phone": "", "group": "g1"}, {"id": "c2", "name": "Рущак", "phone": ""}, {"id": "c3", "name": "Лендел", "phone": ""}, {"id": "c4", "name": "Білак", "phone": ""}, {"id": "c5", "name": "Костак", "phone": ""}, {"id": "c6", "name": "Козушко", "phone": ""}, {"id": "c7", "name": "Цибарь", "phone": ""}, {"id": "c8", "name": "Крьока", "phone": ""}, {"id": "c9", "name": "Папарига", "phone": ""}, {"id": "c10", "name": "Гоєр", "phone": ""}, {"id": "c11", "name": "Думен", "phone": ""}, {"id": "c12", "name": "Морозько Олександр", "phone": ""}, {"id": "c13", "name": "Сятиня", "phone": ""}, {"id": "c14", "name": "Кричфалушій", "phone": ""}, {"id": "c17", "name": "Худенко", "phone": ""}, {"id": "c18", "name": "Іжакевич", "phone": ""}, {"id": "c16a", "name": "Прислупська (маг.1)", "phone": "", "group": "g3"}, {"id": "c16b", "name": "Прислупська (маг.2)", "phone": "", "group": "g3"}, {"id": "c16c", "name": "Прислупська (маг.3)", "phone": "", "group": "g3"}, {"id": "c14a", "name": "Сабов", "phone": "", "group": "g4"}, {"id": "c14b", "name": "Сабов (с.Бедевля)", "phone": "", "group": "g4"}, {"id": "c14c", "name": "Сабов (с.Вишково)", "phone": "", "group": "g4"}, {"id": "c14d", "name": "Сабов (смт.Буштино)", "phone": "", "group": "g4"}, {"id": "c19", "name": "ФОП Бісун", "phone": "", "group": "g2"}, {"id": "c19b", "name": "ФОП Холод", "phone": "", "group": "g2"}, {"id": "c19c", "name": "ФОП Копос", "phone": "", "group": "g2"}], "cliData": {"2026-4": {"c10": {"h1": 11278.29, "h2": 0}, "c12": {"h1": 40170.85, "h2": 0}, "c14c": {"h1": 1083.76, "h2": 0}, "cp3": {"h1": 1956.2, "h2": 0}, "cp1": {"h1": 2517.72, "h2": 0}, "cp2": {"h1": 7040, "h2": 0}, "cp5": {"h1": 38472.32, "h2": 0}, "c11": {"h1": 8290.07, "h2": 0}, "c19c": {"h1": 9177.18, "h2": 0}, "c5": {"h1": 29230.66, "h2": 0}, "c14": {"h1": 42634.02, "h2": 0}, "c1b": {"h1": 2285.23, "h2": 0}, "c14a": {"h1": 9961.69, "h2": 0}, "c14b": {"h1": 2676.24, "h2": 0}, "c14d": {"h1": 1161.17, "h2": 0}, "c13": {"h1": 2535.3, "h2": 0}, "c7": {"h1": 17171.23, "h2": 0}, "c19": {"h1": 6542.73, "h2": 0}, "c16a": {"h1": 52136.74, "h2": 0}, "c19b": {"h1": 4515.46, "h2": 0}}}, "realty": {"goalUsd": 30000, "rate": 44.5, "startBalance": 106378}};
+const BUILT_IN={"pnl": {"2026-3": {"oborot": 1001547, "marzha": 186287, "log1": 5981, "log2": 4794, "log3": 2814, "log4": 4725, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}, "2026-4": {"oborot": 710575, "marzha": 123711.11, "marzhaPct": 17.41, "log1": 5876, "log2": 4564, "log3": 6499, "log4": 0, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}, "2026-5": {"oborot": 832350, "marzha": 160643.55, "marzhaPct": 19.3, "log1": 5044, "log2": 3758, "log3": 12212, "log4": 0, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}}, "payments": [{"id": "p1", "name": "Підписка Claude", "amount": 980, "day": 4, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "paid", "notes": "Claude AI"}, {"id": "p2", "name": "Microsoft Azure", "amount": 350, "day": 9, "cat": "📱 Зв'язок", "remind": 2, "type": "expense", "status": "paid", "notes": "Хмарний сервіс"}, {"id": "p3", "name": "Оренда складу", "amount": 10500, "day": 10, "cat": "🏠 Житло", "remind": 3, "type": "expense", "status": "paid", "notes": ""}, {"id": "p4", "name": "ChatGPT", "amount": 300, "day": 10, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "pending", "notes": ""}, {"id": "p5", "name": "Податки", "amount": 4400, "day": 13, "cat": "💸 Податки", "remind": 3, "type": "expense", "status": "paid", "notes": ""}, {"id": "p6", "name": "Оренда квартири Мукачево", "amount": 17600, "day": 15, "cat": "🏠 Житло", "remind": 2, "type": "income", "status": "pending", "notes": "Орендар"}, {"id": "p7", "name": "Комунальні від орендаря", "amount": 3000, "day": 16, "cat": "💡 Комуналка", "remind": 1, "type": "income", "status": "paid", "notes": "Мукачево"}, {"id": "p8", "name": "Telegram Premium", "amount": 150, "day": 17, "cat": "🎵 Підписки", "remind": 1, "type": "expense", "status": "pending", "notes": ""}, {"id": "p10", "name": "Checkbox", "amount": 250, "day": 21, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "pending", "notes": "РРО онлайн, 21 числа"}, {"id": "p9", "name": "Показники лічильників", "amount": 0, "day": 30, "cat": "📦 Інше", "remind": 3, "type": "reminder", "status": "pending", "notes": "Фото від орендаря"}], "clients": [{"id": "c1", "name": "Немеш", "phone": "", "group": "g1"}, {"id": "c1b", "name": "ФОП Петрище", "phone": "", "group": "g1"}, {"id": "c2", "name": "Рущак", "phone": ""}, {"id": "c3", "name": "Лендел", "phone": ""}, {"id": "c4", "name": "Білак", "phone": ""}, {"id": "c5", "name": "Костак", "phone": ""}, {"id": "c6", "name": "Козушко", "phone": ""}, {"id": "c7", "name": "Цибарь", "phone": ""}, {"id": "c8", "name": "Крьока", "phone": ""}, {"id": "c9", "name": "Папарига", "phone": ""}, {"id": "c10", "name": "Гоєр", "phone": ""}, {"id": "c11", "name": "Думен", "phone": ""}, {"id": "c12", "name": "Морозько Олександр", "phone": ""}, {"id": "c13", "name": "Сятиня", "phone": ""}, {"id": "c14", "name": "Кричфалушій", "phone": ""}, {"id": "c17", "name": "Худенко", "phone": ""}, {"id": "c18", "name": "Іжакевич", "phone": ""}, {"id": "c16a", "name": "Прислупська (маг.1)", "phone": "", "group": "g3"}, {"id": "c16b", "name": "Прислупська (маг.2)", "phone": "", "group": "g3"}, {"id": "c16c", "name": "Прислупська (маг.3)", "phone": "", "group": "g3"}, {"id": "c14a", "name": "Сабов", "phone": "", "group": "g4"}, {"id": "c14b", "name": "Сабов (с.Бедевля)", "phone": "", "group": "g4"}, {"id": "c14c", "name": "Сабов (с.Вишково)", "phone": "", "group": "g4"}, {"id": "c14d", "name": "Сабов (смт.Буштино)", "phone": "", "group": "g4"}, {"id": "c19", "name": "ФОП Бісун", "phone": "", "group": "g2"}, {"id": "c19b", "name": "ФОП Холод", "phone": "", "group": "g2"}, {"id": "c19c", "name": "ФОП Копос", "phone": "", "group": "g2"}], "cliData": {"2026-4": {"c10": {"h1": 11278.29, "h2": 0}, "c12": {"h1": 40170.85, "h2": 0}, "c14c": {"h1": 1083.76, "h2": 0}, "cp3": {"h1": 1956.2, "h2": 0}, "cp1": {"h1": 2517.72, "h2": 0}, "cp2": {"h1": 7040, "h2": 0}, "cp5": {"h1": 38472.32, "h2": 0}, "c11": {"h1": 8290.07, "h2": 0}, "c19c": {"h1": 9177.18, "h2": 0}, "c5": {"h1": 29230.66, "h2": 0}, "c14": {"h1": 42634.02, "h2": 0}, "c1b": {"h1": 2285.23, "h2": 0}, "c14a": {"h1": 9961.69, "h2": 0}, "c14b": {"h1": 2676.24, "h2": 0}, "c14d": {"h1": 1161.17, "h2": 0}, "c13": {"h1": 2535.3, "h2": 0}, "c7": {"h1": 17171.23, "h2": 0}, "c19": {"h1": 6542.73, "h2": 0}, "c16a": {"h1": 52136.74, "h2": 0}, "c19b": {"h1": 4515.46, "h2": 0}}}, "realty": {"goalUsd": 30000, "rate": 44.5, "startBalance": 152950}};
 let DB=(function(){
   const s=load();
   // Якщо версія вшитих даних новіша за збережену в браузері — беремо вшиті дані (авто-оновлення з файлу)
@@ -841,26 +841,30 @@ function realtyCalc(){
   const goalUah = goalUsd * rate;
   document.getElementById('re-goal-uah').textContent = Math.round(goalUah).toLocaleString('uk-UA') + ' ₴';
 
-  // Starting balance
+  // Стартовий баланс (усе накопичене ДО травня 2026 вже тут: 1100$ + 104000грн = 152950)
   const startBal = parseFloat(document.getElementById('re-start-balance').value)||0;
 
-  // Auto from P&L — current month (live з поля, або зі збереженого)
+  // Комерція рахується ТІЛЬКИ з травня 2026 і новіших місяців (старіші вже в стартовому балансі)
+  const REALTY_MONTHS = ['2026-4','2026-5']; // травень (123711→30928) + червень (160644→40161)
+  function monthGE(key){ return REALTY_MONTHS.includes(key); }
+
   const curKey = pnlKey();
   const curMonth = DB.pnl?.[curKey];
-  let curMarzha = nv('pnl-marzha'); // live значення з поля
+  let curMarzha = nv('pnl-marzha');
   if(!curMarzha && curMonth?.marzha) curMarzha = parseFloat(curMonth.marzha);
-  const curComm = curMarzha * 0.25;
+  const curComm = monthGE(curKey) ? curMarzha * 0.25 : 0;
   const curMonthEl = document.getElementById('re-from-pnl-month');
   if(curMonthEl) curMonthEl.textContent = Math.round(curComm).toLocaleString('uk-UA') + ' ₴';
 
-  // Auto from P&L — all months total (поточний місяць — live, решта — збережене)
+  // Комерція всього — тільки з травня і далі
   let totalComm = 0;
   const pnlData = DB.pnl || {};
   Object.entries(pnlData).forEach(([k,d]) => {
-    if(k===curKey) return; // поточний додамо окремо з live
+    if(k===curKey) return;
+    if(!monthGE(k)) return; // місяці до травня — пропускаємо
     if(d && d.marzha) totalComm += parseFloat(d.marzha) * 0.25;
   });
-  totalComm += curComm; // live поточний місяць
+  if(monthGE(curKey)) totalComm += curComm;
   document.getElementById('re-from-pnl').textContent = Math.round(totalComm).toLocaleString('uk-UA') + ' ₴';
 
   // Extras
@@ -880,9 +884,11 @@ function realtyCalc(){
   // Forecast
   const remain = Math.max(goalUah - total, 0);
   document.getElementById('re-remain').textContent = Math.round(remain).toLocaleString('uk-UA') + ' ₴';
-  // avg monthly comm from existing months
-  const monthCount = Object.keys(pnlData).length || 1;
-  const avgMonthly = totalComm / monthCount;
+  // середня комерція з місяців від травня
+  let countM=0;
+  Object.keys(pnlData).forEach(k=>{ if(monthGE(k)) countM++; });
+  if(countM===0) countM=1;
+  const avgMonthly = totalComm / countM;
   const monthsLeft = avgMonthly > 0 ? Math.ceil(remain / avgMonthly) : '—';
   document.getElementById('re-months').textContent = typeof monthsLeft === 'number' ? monthsLeft + ' міс' : '— міс';
 
