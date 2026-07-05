@@ -528,11 +528,11 @@ select.inp option{background:var(--s2);}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Ціль ($)</div>
-        <input class="inp" type="number" id="re-goal-usd" placeholder="30000" value="30000" oninput="realtyCalc()">
+        <input class="inp" type="number" id="re-goal-usd" placeholder="30000" value="30000" oninput="realtySave()">
       </div>
       <div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Курс USD/UAH</div>
-        <input class="inp" type="number" id="re-rate" placeholder="43.6" value="43.6" step="0.1" oninput="realtyCalc()">
+        <input class="inp" type="number" id="re-rate" placeholder="43.6" value="43.6" step="0.1" oninput="realtySave()">
       </div>
     </div>
     <div style="margin-top:12px;padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
@@ -550,7 +550,7 @@ select.inp option{background:var(--s2);}
         <div style="font-size:13px;font-weight:600;">Накопичено до початку обліку</div>
         <div style="font-size:11px;color:var(--muted);">Введи реальну суму станом зараз</div>
       </div>
-      <input type="number" id="re-start-balance" class="inp" placeholder="0" style="width:130px;text-align:right;" value="0" oninput="realtyCalc()">
+      <input type="number" id="re-start-balance" class="inp" placeholder="0" style="width:130px;text-align:right;" value="0" oninput="realtySave()">
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
       <div>
@@ -769,46 +769,8 @@ const GOALS={travel:2000,office:1500}; // Каса Цілей: Подорожі 
 const SK='avanti_v1';
 function load(){try{return JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){return{};}}
 function save(d){try{localStorage.setItem(SK,JSON.stringify(d));}catch(e){}}
-const BUILT_IN={
-  pnl:{"2026-3":{oborot:1001547,marzha:186287,log1:5981,log2:4794,log3:2814,log4:4725,tovar:0,noviTM:0,mkt:0,other:0}},
-  payments:[
-    {id:'p1',name:'Підписка Claude',amount:980,day:4,cat:'🎵 Підписки',remind:2,type:'expense',status:'pending',notes:'Claude AI'},
-    {id:'p2',name:'Microsoft Azure',amount:350,day:9,cat:'📱 Зв\'язок',remind:2,type:'expense',status:'pending',notes:'Хмарний сервіс'},
-    {id:'p3',name:'Оренда складу',amount:10500,day:10,cat:'🏠 Житло',remind:3,type:'expense',status:'pending',notes:''},
-    {id:'p4',name:'ChatGPT',amount:300,day:10,cat:'🎵 Підписки',remind:2,type:'expense',status:'pending',notes:''},
-    {id:'p5',name:'Податки',amount:4400,day:13,cat:'💸 Податки',remind:3,type:'expense',status:'pending',notes:''},
-    {id:'p6',name:'Оренда квартири Мукачево',amount:17600,day:15,cat:'🏠 Житло',remind:2,type:'income',status:'pending',notes:'Орендар'},
-    {id:'p7',name:'Комунальні від орендаря',amount:3000,day:16,cat:'💡 Комуналка',remind:1,type:'income',status:'pending',notes:'Мукачево'},
-    {id:'p8',name:'Telegram Premium',amount:150,day:17,cat:'🎵 Підписки',remind:1,type:'expense',status:'pending',notes:''},
-    {id:'p10',name:'Платіж 21-го',amount:250,day:21,cat:'📦 Інше',remind:2,type:'expense',status:'pending',notes:'Щомісячний'},
-    {id:'p9',name:'Показники лічильників',amount:0,day:30,cat:'📦 Інше',remind:3,type:'reminder',status:'pending',notes:'Фото від орендаря'},
-  ],
-  clients:[
-    {id:'c1',name:'Немеш',phone:'',group:'g1'},
-    {id:'c1b',name:'ФОП Петрище',phone:'',group:'g1'},
-    {id:'c2',name:'Рущак',phone:''},
-    {id:'c3',name:'Лендел',phone:''},
-    {id:'c4',name:'Білак',phone:''},
-    {id:'c5',name:'Костак',phone:''},
-    {id:'c6',name:'Козушко',phone:''},
-    {id:'c7',name:'Цибарь',phone:''},
-    {id:'c8',name:'Крьока',phone:''},
-    {id:'c9',name:'Папарига',phone:''},
-    {id:'c10',name:'Гоєр',phone:''},
-    {id:'c11',name:'Думен',phone:''},
-    {id:'c12',name:'Морозько Олександр',phone:''},
-    {id:'c13',name:'Сятиня',phone:''},
-    {id:'c14',name:'Сабов',phone:''},
-    {id:'c15',name:'Кричфалушій',phone:''},
-    {id:'c16',name:'Прислупська',phone:''},
-    {id:'c17',name:'Худенко',phone:''},
-    {id:'c18',name:'Іжакевич',phone:''},
-    {id:'c19',name:'ФОП Бісун',phone:'',group:'g2'},
-    {id:'c19b',name:'ФОП Холод',phone:'',group:'g2'},
-    {id:'c19c',name:'ФОП Копос',phone:'',group:'g2'},
-  ],
-};
-let DB=(function(){const s=load();return{pnl:{...BUILT_IN.pnl,...(s.pnl||{})},payments:s.payments||BUILT_IN.payments,clients:s.clients||BUILT_IN.clients,cliData:s.cliData||{},realty:s.realty||{}};})();
+const BUILT_IN={"pnl": {"2026-3": {"oborot": 1001547, "marzha": 186287, "log1": 5981, "log2": 4794, "log3": 2814, "log4": 4725, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}, "2026-4": {"oborot": 710575, "marzha": 123711.11, "marzhaPct": 17.41, "log1": 5876, "log2": 4564, "log3": 6499, "log4": 0, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}, "2026-5": {"oborot": 832350, "marzha": 160643.55, "marzhaPct": 19.3, "log1": 5044, "log2": 3758, "log3": 12212, "log4": 0, "tovar": 0, "noviTM": 0, "mkt": 0, "other": 0}}, "payments": [{"id": "p1", "name": "Підписка Claude", "amount": 980, "day": 4, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "paid", "notes": "Claude AI"}, {"id": "p2", "name": "Microsoft Azure", "amount": 350, "day": 9, "cat": "📱 Зв'язок", "remind": 2, "type": "expense", "status": "paid", "notes": "Хмарний сервіс"}, {"id": "p3", "name": "Оренда складу", "amount": 10500, "day": 10, "cat": "🏠 Житло", "remind": 3, "type": "expense", "status": "paid", "notes": ""}, {"id": "p4", "name": "ChatGPT", "amount": 300, "day": 10, "cat": "🎵 Підписки", "remind": 2, "type": "expense", "status": "pending", "notes": ""}, {"id": "p5", "name": "Податки", "amount": 4400, "day": 13, "cat": "💸 Податки", "remind": 3, "type": "expense", "status": "paid", "notes": ""}, {"id": "p6", "name": "Оренда квартири Мукачево", "amount": 17600, "day": 15, "cat": "🏠 Житло", "remind": 2, "type": "income", "status": "pending", "notes": "Орендар"}, {"id": "p7", "name": "Комунальні від орендаря", "amount": 3000, "day": 16, "cat": "💡 Комуналка", "remind": 1, "type": "income", "status": "paid", "notes": "Мукачево"}, {"id": "p8", "name": "Telegram Premium", "amount": 150, "day": 17, "cat": "🎵 Підписки", "remind": 1, "type": "expense", "status": "pending", "notes": ""}, {"id": "p10", "name": "Платіж 21-го", "amount": 250, "day": 21, "cat": "📦 Інше", "remind": 2, "type": "expense", "status": "pending", "notes": "Щомісячний"}, {"id": "p9", "name": "Показники лічильників", "amount": 0, "day": 30, "cat": "📦 Інше", "remind": 3, "type": "reminder", "status": "pending", "notes": "Фото від орендаря"}], "clients": [{"id": "c1", "name": "Немеш", "phone": "", "group": "g1"}, {"id": "c1b", "name": "ФОП Петрище", "phone": "", "group": "g1"}, {"id": "c2", "name": "Рущак", "phone": ""}, {"id": "c3", "name": "Лендел", "phone": ""}, {"id": "c4", "name": "Білак", "phone": ""}, {"id": "c5", "name": "Костак", "phone": ""}, {"id": "c6", "name": "Козушко", "phone": ""}, {"id": "c7", "name": "Цибарь", "phone": ""}, {"id": "c8", "name": "Крьока", "phone": ""}, {"id": "c9", "name": "Папарига", "phone": ""}, {"id": "c10", "name": "Гоєр", "phone": ""}, {"id": "c11", "name": "Думен", "phone": ""}, {"id": "c12", "name": "Морозько Олександр", "phone": ""}, {"id": "c13", "name": "Сятиня", "phone": ""}, {"id": "c14", "name": "Кричфалушій", "phone": ""}, {"id": "c17", "name": "Худенко", "phone": ""}, {"id": "c18", "name": "Іжакевич", "phone": ""}, {"id": "c16a", "name": "Прислупська (маг.1)", "phone": "", "group": "g3"}, {"id": "c16b", "name": "Прислупська (маг.2)", "phone": "", "group": "g3"}, {"id": "c16c", "name": "Прислупська (маг.3)", "phone": "", "group": "g3"}, {"id": "c14a", "name": "Сабов", "phone": "", "group": "g4"}, {"id": "c14b", "name": "Сабов (с.Бедевля)", "phone": "", "group": "g4"}, {"id": "c14c", "name": "Сабов (с.Вишково)", "phone": "", "group": "g4"}, {"id": "c14d", "name": "Сабов (смт.Буштино)", "phone": "", "group": "g4"}, {"id": "c19", "name": "ФОП Бісун", "phone": "", "group": "g2"}, {"id": "c19b", "name": "ФОП Холод", "phone": "", "group": "g2"}, {"id": "c19c", "name": "ФОП Копос", "phone": "", "group": "g2"}], "cliData": {"2026-4": {"c10": {"h1": 11278.29, "h2": 0}, "c12": {"h1": 40170.85, "h2": 0}, "c14c": {"h1": 1083.76, "h2": 0}, "cp3": {"h1": 1956.2, "h2": 0}, "cp1": {"h1": 2517.72, "h2": 0}, "cp2": {"h1": 7040, "h2": 0}, "cp5": {"h1": 38472.32, "h2": 0}, "c11": {"h1": 8290.07, "h2": 0}, "c19c": {"h1": 9177.18, "h2": 0}, "c5": {"h1": 29230.66, "h2": 0}, "c14": {"h1": 42634.02, "h2": 0}, "c1b": {"h1": 2285.23, "h2": 0}, "c14a": {"h1": 9961.69, "h2": 0}, "c14b": {"h1": 2676.24, "h2": 0}, "c14d": {"h1": 1161.17, "h2": 0}, "c13": {"h1": 2535.3, "h2": 0}, "c7": {"h1": 17171.23, "h2": 0}, "c19": {"h1": 6542.73, "h2": 0}, "c16a": {"h1": 52136.74, "h2": 0}, "c19b": {"h1": 4515.46, "h2": 0}}}, "realty": {"goalUsd": 30000, "rate": 44.5, "startBalance": 106378}};
+let DB=(function(){const s=load();return{pnl:{...BUILT_IN.pnl,...(s.pnl||{})},payments:s.payments||BUILT_IN.payments,clients:s.clients||BUILT_IN.clients,cliData:s.cliData||BUILT_IN.cliData||{},realty:s.realty||BUILT_IN.realty||{}};})();
 function saveDB(){save(DB);}
 
 // ── НАДІЙНЕ ЗБЕРЕЖЕННЯ У ФАЙЛ ──
@@ -907,13 +869,17 @@ function realtyCalc(){
   const monthsLeft = avgMonthly > 0 ? Math.ceil(remain / avgMonthly) : '—';
   document.getElementById('re-months').textContent = typeof monthsLeft === 'number' ? monthsLeft + ' міс' : '— міс';
 
-  // Save settings
-  if(!DB.realty) DB.realty = {};
-  DB.realty.goalUsd = goalUsd;
-  DB.realty.rate = rate;
-  DB.realty.startBalance = startBal;
-  saveDB();
   renderExtras();
+}
+
+// Зберегти налаштування нерухомості (викликається при зміні полів користувачем)
+function realtySave(){
+  if(!DB.realty) DB.realty = {};
+  DB.realty.goalUsd = parseFloat(document.getElementById('re-goal-usd').value)||30000;
+  DB.realty.rate = parseFloat(document.getElementById('re-rate').value)||43.6;
+  DB.realty.startBalance = parseFloat(document.getElementById('re-start-balance').value)||0;
+  saveDB();
+  realtyCalc();
 }
 
 function renderExtras(){
@@ -1666,11 +1632,12 @@ function sv(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
 function pp(id){return document.getElementById(id);}
 
 // ══════════ INIT ══════════
+try{ initRealty(); }catch(e){}
 renderPayments();
 loadPnl();
 renderClients();
-// Нерухомість — відновити збережені ціль/курс/баланс (тепер у P&L)
-try{ initRealty(); }catch(e){}
+// Нерухомість — відновити збережені ціль/курс/баланс і перерахувати
+try{ initRealty(); realtyCalc(); }catch(e){}
 // Перевіряємо сповіщення при відкритті (тільки якщо вже дозволено)
 try{if('Notification' in window&&Notification.permission==='granted'){notifEnabled=true;document.getElementById('notif-btn').style.color='var(--green)';checkNotifications();}}catch(e){}
 </script>
