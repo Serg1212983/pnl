@@ -382,6 +382,7 @@ select.inp option{background:var(--s2);}
       <div class="row"><div class="row-name">Checkbox (2 ФОП) <span class="badge badge-fixed">500₴</span></div><div class="row-pct" id="pp-sub250">—</div><div class="row-amt" style="color:var(--red)">500₴</div></div>
       <div class="row"><div class="row-name">Інтернет офіс+сервер <span class="badge badge-fixed">540₴</span></div><div class="row-pct" id="pp-internet">—</div><div class="row-amt" style="color:var(--red)">540₴</div></div>
       <div class="row"><div class="row-name">Vodafone (2 ФОП) <span class="badge badge-fixed">670₴</span></div><div class="row-pct" id="pp-vodafone">—</div><div class="row-amt" style="color:var(--red)">670₴</div></div>
+      <div class="row" id="row-cfund"><div class="row-name">Призовий фонд клієнтів <span class="badge badge-auto">0,5% обороту · від 2 млн/міс</span></div><div class="row-pct" id="pp-cfund">—</div><div class="row-amt" style="color:var(--red)" id="pnl-amt-cfund">0₴</div></div>
 
 
     </div>
@@ -510,6 +511,9 @@ select.inp option{background:var(--s2);}
         <div style="display:flex;justify-content:space-between;">🔒 Оборотний резерв <span><b style="color:#22d3ee" id="dist-res-tot">0₴</b> / 100 000₴</span></div>
         <div style="display:flex;justify-content:space-between;">🚀 Фонд Росту (накопичено − витрати Росту) <b style="color:var(--green)" id="dist-growfund">0₴</b></div>
         <div style="display:flex;justify-content:space-between;" id="dist-region-tot-row">🌍 Регіональний фонд (накопичено) <b style="color:#22d3ee" id="dist-region-tot">0₴</b></div>
+        <div style="display:flex;justify-content:space-between;">🎁 Бонусний фонд агентів (накопичено) <b style="color:#f472b6" id="dist-agb-tot">0₴</b></div>
+        <div style="font-size:11px;color:var(--muted);text-align:right;margin-top:-4px;" id="dist-agb-year">—</div>
+        <div style="display:flex;justify-content:space-between;">🏆 Призовий фонд клієнтів (накопичено) <b style="color:#f472b6" id="dist-cf-tot">0₴</b></div>
         <div style="display:flex;justify-content:space-between;">🛡 Каса Фундамент (накопичено) <span><b style="color:#fbbf24" id="dist-reward-tot">0₴</b> / <span id="dist-fund-goal">—</span></span></div>
         <div style="display:flex;justify-content:space-between;">🏡 Каса Дім <span><b style="color:#a78bfa" id="dist-home-tot">0₴</b> / <span id="dist-home-goal">30 000$</span></span></div>
       </div>
@@ -580,6 +584,7 @@ select.inp option{background:var(--s2);}
     <div class="row"><div class="row-name">− Комісія агента (5% від суми замовлень ІФ)</div><div class="row-pct"></div><div class="row-amt" style="color:var(--red)" id="if-comm">0₴</div></div>
     <div class="row"><div class="row-name">− Зв'язок агента <span class="badge badge-auto">авто · щомісяця</span></div><div class="row-pct"></div><div class="row-amt" style="color:var(--red)" id="if-sim">0₴</div></div>
     <div class="row"><div class="row-name" id="if-log-lbl">− Логістика ІФ</div><div class="row-pct"></div><div class="row-amt" style="color:var(--red)" id="if-logv">0₴</div></div>
+    <div class="row"><div class="row-name">− Бонусний фонд агента <span class="badge badge-auto">0,1% обороту</span></div><div class="row-pct"></div><div class="row-amt" style="color:var(--red)" id="if-agb">0₴</div></div>
     <div class="row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px;"><div class="row-name" style="font-weight:700;">= Результат ІФ</div><div class="row-pct" id="if-res-pct">—</div><div class="row-amt" style="font-weight:700;" id="if-res">0₴</div></div>
     <div class="subsec-title" style="margin-top:14px;">Розподіл результату ІФ · <span id="if-month">—</span></div>
     <div id="if-dist">
@@ -919,6 +924,11 @@ function stageOf(y,m){const k=y*12+m;return STAGES.find(st=>k>=st.from&&k<=st.to
 // ══ Торговий агент · Івано-Франківська обл. (з жовтня 2026) ══
 // Комісія 5% від суми відвантажених замовлень ІФ + поповнення картки зв'язку щомісяця 15-го.
 const AGENT_IF={start:2026*12+9,sim:420,rate:.05};
+// Бонусний фонд агентів: 0,1% обороту агента з кожного місяця. Виплата в кінці року (сертифікат на відпочинок),
+// лише якщо оборот агента за рік ≥ 6 млн (у середньому від 500 тис./міс).
+const AGENT_BONUS={rate:.001,yearMin:6000000};
+// Призовий фонд клієнтів: 0,5% загального обороту — лише за місяці, коли загальний оборот ≥ 2 млн. Виплата в кінці року клієнтам VIP/LIMITED/EXCLUSIVE (10 з 12 міс.).
+const CLIENT_FUND={rate:.005,min:2000000};
 function agentCost(ifOb,y,m){ const comm=(ifOb||0)*AGENT_IF.rate; const sim=(y*12+m>=AGENT_IF.start)?AGENT_IF.sim:0; return {sim,comm,total:sim+comm}; }
 // ══ Регіональний фонд ══
 // Результат напрямку ІФ (маржа ІФ − комісія − зв'язок − логістика ІФ) не йде в загальний розподіл.
@@ -930,7 +940,8 @@ function ifResult(ob,mz,log,ifOb,ifMzPct,ifLogIn,y,m){
   const ifMz=(ifOb||0)*ifPct/100;
   const ifLog=ifLogIn>0?ifLogIn:(ob>0?log*Math.min(ifOb||0,ob)/ob:0);
   const ag=agentCost(ifOb,y,m);
-  return {res:ifMz-ag.comm-ag.sim-ifLog,ifMz,ifLog,ifPct,ag};
+  const agBonus=(ifOb||0)*AGENT_BONUS.rate;
+  return {res:ifMz-ag.comm-ag.sim-ifLog-agBonus,ifMz,ifLog,ifPct,ag,agBonus};
 }
 function regionStartIdx(curIdx,curIfOb){
   let first=null;
@@ -969,7 +980,8 @@ function fixedBlock(ob,log,y,m,ifOb){
   const life=17000+ob*.0035;
   const goals=GOALS.travel+GOALS.office+(ovenOn(y,m)?OVEN.sergey:0);
   const pension=ob*.0025;
-  return {mand,serv,agent:ag.total,agSim:ag.sim,agComm:ag.comm,life,goals,pension,total:mand+serv+ag.total+life+goals+pension};
+  const cfund=ob>=CLIENT_FUND.min?ob*CLIENT_FUND.rate:0;
+  return {mand,serv,cfund,agent:ag.total,agSim:ag.sim,agComm:ag.comm,life,goals,pension,total:mand+serv+cfund+ag.total+life+goals+pension};
 }
 // Розподіл вільної маржі. resSoFar — уже накопичений оборотний резерв, debtLeft — залишок боргу.
 function allocate(free,st,resSoFar,debtLeft){
@@ -998,7 +1010,7 @@ function allocate(free,st,resSoFar,debtLeft){
 }
 // Накопичення за місяці з даними (індекс місяця < uptoIdx), у хронологічному порядку
 function kasaLedger(uptoIdx){
-  const t={inv:0,res:0,debt:0,home:0,grow:0,ads:0,dev:0,spent:0,comm25:0,region:0,reward:0};
+  const t={inv:0,res:0,debt:0,home:0,grow:0,ads:0,dev:0,spent:0,comm25:0,region:0,reward:0,agBonus:0,cfund:0};
   const firstIF=regionStartIdx(uptoIdx,0);
   const ks=Object.keys(DB.pnl||{}).map(k=>{const[y,m]=k.split('-').map(Number);return{k,y,m,i:y*12+m};})
     .filter(o=>o.i<uptoIdx).sort((x,z)=>x.i-z.i);
@@ -1008,7 +1020,7 @@ function kasaLedger(uptoIdx){
     if(!st){ if(o.i>=2026*12+4) t.comm25+=(+d.marzha||0)*.25; return; } // травень–серпень 2026: стара схема 25%
     const log=(+d.log1||0)+(+d.log2||0)+(+d.log3||0)+(+d.log4||0);
     const M=monthModel({ob:+d.oborot||0,mz:+d.marzha||0,log,ifOb:+d.ifOb||0,ifMzPct:+d.ifMzPct||0,ifLog:+d.ifLog||0,y:o.y,m:o.m,idx:o.i,firstIF,st,resSoFar:t.res,debtLeft:DEBT_START-t.debt});
-    t.region+=M.reg; t.reward+=M.fund;
+    t.region+=M.reg; t.reward+=M.fund; t.agBonus+=M.ir.agBonus||0; t.cfund+=M.fb.cfund||0;
     const a=sumAlloc(M.aZ,M.aI);
     ['inv','res','debt','home','grow','ads','dev'].forEach(f=>t[f]+=a[f]);
     t.spent+=(+d.tovar||0)+(+d.noviTM||0)+(+d.mkt||0)+(+d.other||0);
@@ -1448,7 +1460,7 @@ function pnlRecalc(){
   const zp=ob*.02,vidp=ob*.0035,pension=fb.pension,life=fb.life,goals=fb.goals;
   const tovar=nv('pnl-tovar'),noviTM=nv('pnl-noviTM'),mkt=nv('pnl-mkt'),other=nv('pnl-other');
   const variable=tovar+noviTM+mkt+other;
-  const biz=fb.mand+fb.serv-ir.ifLog;
+  const biz=fb.mand+fb.serv+fb.cfund-ir.ifLog;
   const hasData=!!(ob||mzAll);
   const ifOb=nv('if-ob');
   const setT=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -1461,7 +1473,8 @@ function pnlRecalc(){
   setT('pnl-log-sum',fmt(log)); setT('pnl-amt-log',fmt(M.zakLog)); setT('pnl-amt-zp',fmt(zp));
   setT('pnl-log-if-note',ir.ifLog>0?('з них ІФ ≈ '+fmt(ir.ifLog)+' → рахується в блоці ІФ · Закарпаття: '+fmt(M.zakLog)):'');
   setT('pnl-amt-vidp',fmt(vidp)); setT('pnl-amt-pension',fmt(pension)); setT('pnl-pension-month',fmt(pension));
-  setT('pnl-total-mand',fmt(fb.mand-ir.ifLog)); setT('pnl-total-serv',fmt(fb.serv));
+  setT('pnl-total-mand',fmt(fb.mand-ir.ifLog)); setT('pnl-total-serv',fmt(fb.serv+fb.cfund));
+  setT('pnl-amt-cfund',fmt(fb.cfund)); setT('pp-cfund',fb.cfund>0&&zakMz>0?(fb.cfund/zakMz*100).toFixed(1)+'%':'—');
   setT('pnl-total-growth',fmt(biz)); setT('pnl-pct-growth',pctOf(biz,mz));
   setT('pnl-total-life',fmt(life)); setT('pnl-pct-life',pctOf(life,mz));
   setT('pnl-total-reserve',fmt(pension));
@@ -1526,6 +1539,14 @@ function pnlRecalc(){
     setT('dist-home-tot',fmt(H.home+A.home)); setT('dist-home-goal',HOME_GOAL_USD.toLocaleString('uk-UA')+'$ ≈ '+fmt(HOME_GOAL_USD*rate));
     setT('dist-region-tot',fmt((H.region||0)+M.reg));
     setT('dist-reward-tot',fmt((H.reward||0)+M.fund));
+    setT('dist-agb-tot',fmt((H.agBonus||0)+(ir.agBonus||0)));
+    {
+      let yr=0; Object.keys(DB.pnl||{}).forEach(k=>{const[y,m]=k.split('-').map(Number); if(y===pnlYear&&m<pnlMonth) yr+=(+DB.pnl[k].ifOb||0);});
+      yr+=ifOb;
+      const ok=yr>=AGENT_BONUS.yearMin;
+      setT('dist-agb-year','оборот агента за '+pnlYear+': '+fmt(yr)+' / 6 млн — '+(ok?'бонус буде виплачено ✓':'поки нижче порогу виплати'));
+    }
+    setT('dist-cf-tot',fmt((H.cfund||0)+(fb.cfund||0)));
     setT('dist-fund-goal',fmt(zakOb*6)+' (6 міс. обов\'язкових)');
   }
 
@@ -1538,7 +1559,7 @@ function pnlRecalc(){
     else w.style.display='none';
     setT('if-share',ob>0&&ifOb>0?(ifOb/ob*100).toFixed(1)+'%':'—');
     setT('if-mz-used',ir.ifPct?ir.ifPct.toFixed(1)+'%':'—'); setT('if-mz',fmt(ir.ifMz));
-    setT('if-comm','−'+fmt(ir.ag.comm)); setT('if-sim','−'+fmt(ir.ag.sim)); setT('if-logv','−'+fmt(ir.ifLog));
+    setT('if-comm','−'+fmt(ir.ag.comm)); setT('if-sim','−'+fmt(ir.ag.sim)); setT('if-logv','−'+fmt(ir.ifLog)); setT('if-agb','−'+fmt(ir.agBonus||0));
     const re_=document.getElementById('if-res'); re_.textContent=fmt(ir.res); re_.style.color=ir.res>=0?'var(--green)':'var(--red)';
     setT('if-res-pct',ifOb>0?(ir.res/ifOb*100).toFixed(1)+'% об.':'—');
     setT('if-month',M.ifMonthNo?('місяць '+M.ifMonthNo+(M.ifMonthNo<=REGION.full?' з 6 (етап запуску)':' (етап зрілості)')):'напрямок ще не стартував');
