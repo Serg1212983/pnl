@@ -503,7 +503,7 @@ select.inp option{background:var(--s2);}
       <div class="row" id="dist-row-dev"><div class="row-name">Розвиток (склад, автоматизація)</div><div class="row-pct" id="dist-pct-dev">—</div><div class="row-amt" style="color:var(--green)" id="dist-dev">0₴</div></div>
       <div class="row"><div class="row-name">Борг постачальникам</div><div class="row-pct" id="dist-pct-debt">—</div><div class="row-amt" style="color:var(--red)" id="dist-debt">0₴</div></div>
       <div class="row"><div class="row-name">Каса Інвестицій</div><div class="row-pct" id="dist-pct-inv">—</div><div class="row-amt" style="color:var(--amber)" id="dist-inv">0₴</div></div>
-      <div class="row" style="padding-left:14px;"><div class="row-name" style="font-size:12px;color:var(--muted);">🔒 з них оборотний резерв</div><div class="row-pct" id="dist-pct-res">—</div><div class="row-amt" style="color:#22d3ee" id="dist-res">0₴</div></div>
+      <div class="row" style="padding-left:14px;"><div class="row-name" style="font-size:12px;color:var(--muted);">🔒 з них Товарна каса (оборотний резерв)</div><div class="row-pct" id="dist-pct-res">—</div><div class="row-amt" style="color:#22d3ee" id="dist-res">0₴</div></div>
       <div class="row" id="dist-row-home"><div class="row-name">🏡 Каса Дім</div><div class="row-pct" id="dist-pct-home">—</div><div class="row-amt" style="color:#a78bfa" id="dist-home">0₴</div></div>
       <div id="dist-short" style="display:none;margin-top:8px;padding:10px 12px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:10px;font-size:12px;color:var(--red);"></div>
       <div style="margin-top:12px;padding:12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;font-size:13px;line-height:1.9;">
@@ -561,7 +561,7 @@ select.inp option{background:var(--s2);}
         <div style="color:var(--muted);font-size:11px;margin-bottom:6px;">☕ AVANTI Coffee · 🏷 Власна ТМ · 🏢 Комерційна нерухомість</div>
         <div style="display:flex;justify-content:space-between;">Внесок цього місяця: <span style="color:var(--amber);font-weight:700" id="pnl-comm-month">0₴</span></div>
         <div style="display:flex;justify-content:space-between;margin-top:4px;">Внески з P&amp;L з травня 2026: <span style="color:var(--amber);font-weight:700" id="pnl-comm-total">0₴</span></div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;">🔒 з них оборотний резерв: <span style="color:#22d3ee;font-weight:700" id="inv-res-total">0₴</span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">🔒 з них Товарна каса (оборотний резерв): <span style="color:#22d3ee;font-weight:700" id="inv-res-total">0₴</span></div>
         <div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.5;">Оборотний резерв (до 100 000₴) — недоторкана частина каси: брати лише на закупівлю товару й повертати за 30 днів. Повна сума каси (стартовий баланс + внески + надходження − позики) — у трекері «Каса Інвестицій» унизу сторінки.</div>
       </div>
     </div>
@@ -915,8 +915,9 @@ const DEBT_MIN=10000;            // мінімальний платіж по б�
 const RES_TARGET=100000;         // оборотний резерв (недоторкана частина Каси Інвестицій)
 const HOME_GOAL_USD=30000;       // Каса Дім: додати до коштів від продажу квартири
 const STAGES=[
-  {id:'А1',from:2026*12+8,to:2026*12+11,label:'А1 · вер–гру 2026',grow:.30,ads:0,  dev:0,  debt:.10,res:0,  home:0},
-  {id:'А2',from:2027*12+0,to:2027*12+4, label:'А2 · січ–тра 2027',grow:.30,ads:0,  dev:0,  debt:.10,res:.10,home:0},
+  // З вересня 2026: Реклама/ріст 20% · Товарна каса (оборотний резерв, стеля 100 000) 15% · Борг 10% · Каса Інвестицій 55%.
+  // Коли Товарна каса досягне 100 000 — її 15% автоматично йдуть у Касу Інвестицій.
+  {id:'А',from:2026*12+8,to:2027*12+4,label:'А · вер 2026 – тра 2027',grow:.20,ads:0,dev:0,debt:.10,res:.15,home:0},
   {id:'Б', from:2027*12+5,to:2027*12+5, label:'Б · червень 2027', grow:0,  ads:.15,dev:.10,debt:.10,res:.10,home:0},
   {id:'В', from:2027*12+6,to:99999,     label:'В · з липня 2027', grow:0,  ads:.15,dev:.10,debt:.10,res:.10,home:.30},
 ];
