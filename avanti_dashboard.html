@@ -503,12 +503,12 @@ select.inp option{background:var(--s2);}
       <div class="row" id="dist-row-dev"><div class="row-name">Розвиток (склад, автоматизація)</div><div class="row-pct" id="dist-pct-dev">—</div><div class="row-amt" style="color:var(--green)" id="dist-dev">0₴</div></div>
       <div class="row"><div class="row-name">Борг постачальникам</div><div class="row-pct" id="dist-pct-debt">—</div><div class="row-amt" style="color:var(--red)" id="dist-debt">0₴</div></div>
       <div class="row"><div class="row-name">Каса Інвестицій</div><div class="row-pct" id="dist-pct-inv">—</div><div class="row-amt" style="color:var(--amber)" id="dist-inv">0₴</div></div>
-      <div class="row" style="padding-left:14px;"><div class="row-name" style="font-size:12px;color:var(--muted);">🔒 з них Товарна каса (оборотний резерв)</div><div class="row-pct" id="dist-pct-res">—</div><div class="row-amt" style="color:#22d3ee" id="dist-res">0₴</div></div>
+      <div class="row"><div class="row-name">📦 Товарна каса <span class="badge badge-auto">на товар · стеля 100 000</span></div><div class="row-pct" id="dist-pct-res">—</div><div class="row-amt" style="color:#22d3ee" id="dist-res">0₴</div></div>
       <div class="row" id="dist-row-home"><div class="row-name">🏡 Каса Дім</div><div class="row-pct" id="dist-pct-home">—</div><div class="row-amt" style="color:#a78bfa" id="dist-home">0₴</div></div>
       <div id="dist-short" style="display:none;margin-top:8px;padding:10px 12px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:10px;font-size:12px;color:var(--red);"></div>
       <div style="margin-top:12px;padding:12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;font-size:13px;line-height:1.9;">
         <div style="display:flex;justify-content:space-between;">💳 Борг: погашено <span><b style="color:var(--green)" id="dist-debt-paid">0₴</b> · залишок <b style="color:var(--red)" id="dist-debt-left">400 000₴</b></span></div>
-        <div style="display:flex;justify-content:space-between;">🔒 Оборотний резерв <span><b style="color:#22d3ee" id="dist-res-tot">0₴</b> / 100 000₴</span></div>
+        <div style="display:flex;justify-content:space-between;">📦 Товарна каса <span><b style="color:#22d3ee" id="dist-res-tot">0₴</b> / 100 000₴</span></div>
         <div style="display:flex;justify-content:space-between;">🚀 Фонд Росту (накопичено − витрати Росту) <b style="color:var(--green)" id="dist-growfund">0₴</b></div>
         <div style="display:flex;justify-content:space-between;" id="dist-region-tot-row">🌍 Регіональний фонд (накопичено) <b style="color:#22d3ee" id="dist-region-tot">0₴</b></div>
         <div style="display:flex;justify-content:space-between;">🎁 Бонусний фонд агентів (накопичено) <b style="color:#f472b6" id="dist-agb-tot">0₴</b></div>
@@ -561,7 +561,7 @@ select.inp option{background:var(--s2);}
         <div style="color:var(--muted);font-size:11px;margin-bottom:6px;">☕ AVANTI Coffee · 🏷 Власна ТМ · 🏢 Комерційна нерухомість</div>
         <div style="display:flex;justify-content:space-between;">Внесок цього місяця: <span style="color:var(--amber);font-weight:700" id="pnl-comm-month">0₴</span></div>
         <div style="display:flex;justify-content:space-between;margin-top:4px;">Внески з P&amp;L з травня 2026: <span style="color:var(--amber);font-weight:700" id="pnl-comm-total">0₴</span></div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;">🔒 з них Товарна каса (оборотний резерв): <span style="color:#22d3ee;font-weight:700" id="inv-res-total">0₴</span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">📦 Товарна каса (окремо від Інвестицій): <span style="color:#22d3ee;font-weight:700" id="inv-res-total">0₴</span></div>
         <div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.5;">Оборотний резерв (до 100 000₴) — недоторкана частина каси: брати лише на закупівлю товару й повертати за 30 днів. Повна сума каси (стартовий баланс + внески + надходження − позики) — у трекері «Каса Інвестицій» унизу сторінки.</div>
       </div>
     </div>
@@ -1165,7 +1165,7 @@ function realtyCalc(){
   const CAr = currentAlloc();
   const curIdx = pnlYear*12+pnlMonth;
   let curComm = 0;
-  if(CAr.st && CAr.a) curComm = CAr.a.inv;
+  if(CAr.st && CAr.a) curComm = CAr.a.inv - CAr.a.res;
   else if(!CAr.st && curIdx >= 2026*12+4){
     let cm = nv('pnl-marzha'); const cd = DB.pnl?.[pnlKey()];
     if(!cm && cd?.marzha) cm = parseFloat(cd.marzha);
@@ -1174,7 +1174,7 @@ function realtyCalc(){
   const curMonthEl = document.getElementById('re-from-pnl-month');
   if(curMonthEl) curMonthEl.textContent = Math.round(curComm).toLocaleString('uk-UA') + ' ₴';
   const Lr = CAr.hist;
-  const totalComm = Lr.comm25 + Lr.inv + curComm;
+  const totalComm = Lr.comm25 + Lr.inv - Lr.res + curComm;
   document.getElementById('re-from-pnl').textContent = Math.round(totalComm).toLocaleString('uk-UA') + ' ₴';
   const pnlData = DB.pnl || {};
 
@@ -1468,7 +1468,7 @@ function pnlRecalc(){
   const pctOf=(v,base)=>base>0?(v/base*100).toFixed(1)+'%':'—';
   const newMode=!!(st&&CA.a);
   const AZ=CA.aZ, AI=CA.aI, A=CA.a;                                   // Закарпаття / ІФ / разом
-  const comm=newMode?A.inv:mzAll*.25;                                 // внесок у Касу Інвестицій цього місяця (разом)
+  const comm=newMode?(A.inv-A.res):mzAll*.25;                                 // внесок у Касу Інвестицій цього місяця (разом)
 
   // ── 1. Обов'язкові витрати (Закарпаття) ──
   setT('pnl-log-sum',fmt(log)); setT('pnl-amt-log',fmt(M.zakLog)); setT('pnl-amt-zp',fmt(zp));
@@ -1522,7 +1522,7 @@ function pnlRecalc(){
     document.getElementById('dist-row-dev').style.display=st.dev>0?'flex':'none';
     setT('dist-dev',fmt(AZ.dev)); setT('dist-pct-dev',pctOf(AZ.dev,fr));
     setT('dist-debt',fmt(AZ.debt)); setT('dist-pct-debt',pctOf(AZ.debt,fr));
-    setT('dist-inv',fmt(AZ.inv)); setT('dist-pct-inv',pctOf(AZ.inv,fr));
+    setT('dist-inv',fmt(AZ.inv-AZ.res)); setT('dist-pct-inv',pctOf(AZ.inv-AZ.res,fr));
     setT('dist-res',fmt(AZ.res)); setT('dist-pct-res',pctOf(AZ.res,fr));
     document.getElementById('dist-row-home').style.display=(st.home>0||AZ.home>0)?'flex':'none';
     setT('dist-home',fmt(AZ.home)); setT('dist-pct-home',pctOf(AZ.home,fr));
@@ -1573,24 +1573,24 @@ function pnlRecalc(){
     setT('if-rew-pct',pos?pctOf(M.fund,ir.res):'—'); setT('if-reg-pct',pos?pctOf(M.reg,ir.res):'—'); setT('if-gen-pct',pos?pctOf(M.ifGen,ir.res):'—');
     const gs=document.getElementById('if-gen-split');
     if(newMode&&M.ifGen>0&&AI){
-      gs.innerHTML='з них: '+(st.grow>0?'Ріст ':'Реклама ')+'<b>'+fmt(st.grow>0?AI.grow:AI.ads)+'</b>'+(st.dev>0?' · Розвиток <b>'+fmt(AI.dev)+'</b>':'')+' · Борг <b>'+fmt(AI.debt)+'</b> · Каса Інвестицій <b>'+fmt(AI.inv)+'</b>'+(AI.home>0?' · Дім <b>'+fmt(AI.home)+'</b>':'');
+      gs.innerHTML='з них: '+(st.grow>0?'Ріст ':'Реклама ')+'<b>'+fmt(st.grow>0?AI.grow:AI.ads)+'</b>'+(st.dev>0?' · Розвиток <b>'+fmt(AI.dev)+'</b>':'')+' · Борг <b>'+fmt(AI.debt)+'</b> · Товарна каса <b>'+fmt(AI.res)+'</b> · Каса Інвестицій <b>'+fmt(AI.inv-AI.res)+'</b>'+(AI.home>0?' · Дім <b>'+fmt(AI.home)+'</b>':'');
     } else gs.innerHTML=M.ifGen>0?'':'до 7-го місяця напрямку в загальну схему нічого не йде';
   }
 
   // Каса Інвестицій (картка) — разом
   setT('pnl-amt-comm',fmt(comm)); setT('pnl-comm-month',fmt(comm)); setT('pnl-total-comm',fmt(comm));
   if(newMode){
-    setT('inv-target','Закарпаття + частка ІФ · етап '+st.id); setT('inv-badge',pctOf(AZ.inv,AZ.free));
-    setT('inv-row-label','Внесок: Закарпаття '+fmt(AZ.inv)+(AI&&AI.inv>0?' + ІФ '+fmt(AI.inv):'')); setT('inv-row-pct',pctOf(AZ.inv,AZ.free));
+    setT('inv-target','Закарпаття + частка ІФ · етап '+st.id); setT('inv-badge',pctOf(AZ.inv-AZ.res,AZ.free));
+    setT('inv-row-label','Внесок: Закарпаття '+fmt(AZ.inv-AZ.res)+(AI&&AI.inv>0?' + ІФ '+fmt(AI.inv-AI.res):'')); setT('inv-row-pct',pctOf(AZ.inv-AZ.res,AZ.free));
   } else {
     setT('inv-target','стара схема · 25% від маржі'); setT('inv-badge','25%');
     setT('inv-row-label','Внесок: 25% від маржі (до вересня 2026)'); setT('inv-row-pct','25%');
   }
   {
     const H=CA.hist;
-    const curInv=newMode?A.inv:((!st&&pnlYear*12+pnlMonth>=2026*12+4)?mzAll*.25:0);
+    const curInv=newMode?(A.inv-A.res):((!st&&pnlYear*12+pnlMonth>=2026*12+4)?mzAll*.25:0);
     setT('inv-res-total',fmt(H.res+(newMode?A.res:0)));
-    setT('pnl-comm-total',fmt(H.comm25+H.inv+curInv));
+    setT('pnl-comm-total',fmt(H.comm25+H.inv-H.res+curInv));
   }
 
   // ── Підсумок (Закарпаття) ──
@@ -1608,7 +1608,8 @@ function pnlRecalc(){
     dh+=row('→ '+(st.grow>0?'Ріст (TurboWeb + реклама)':'Реклама'),st.grow>0?AZ.grow:AZ.ads,'var(--green)',pctOf(st.grow>0?AZ.grow:AZ.ads,AZ.free));
     if(st.dev>0) dh+=row('→ Розвиток',AZ.dev,'var(--green)',pctOf(AZ.dev,AZ.free));
     dh+=row('→ Борг постачальникам',AZ.debt,'var(--red)',pctOf(AZ.debt,AZ.free));
-    dh+=row('→ Каса Інвестицій (з них резерв '+fmt(AZ.res)+')',AZ.inv,'var(--amber)',pctOf(AZ.inv,AZ.free));
+    dh+=row('→ Товарна каса',AZ.res,'#22d3ee',pctOf(AZ.res,AZ.free));
+    dh+=row('→ Каса Інвестицій',AZ.inv-AZ.res,'var(--amber)',pctOf(AZ.inv-AZ.res,AZ.free));
     if(st.home>0||AZ.home>0) dh+=row('→ Каса Дім',AZ.home,'#a78bfa',pctOf(AZ.home,AZ.free));
     if(ir.res>0) dh+='<div class="sum-row" style="margin-top:6px;"><div class="sum-name" style="font-size:12px;">📍 ІФ окремо: результат '+fmt(ir.res)+' → Фундамент '+fmt(M.fund)+' · Рег. фонд '+fmt(M.reg)+' · у схему '+fmt(M.ifGen)+'</div></div>';
   } else if(hasData){
@@ -1642,7 +1643,7 @@ function pnlRecalc(){
   document.getElementById('pnl-pension-total').textContent=fmt(pensTot);
 
   if(newMode){
-    drawDonut([{l:'Бізнес',v:biz,c:'#f87171'},{l:'Життя+Цілі+Резерв',v:life+goals+pension,c:'#818cf8'},{l:'Ріст/Розвиток',v:AZ.grow+AZ.ads+AZ.dev,c:'#4ade80'},{l:'Борг',v:AZ.debt,c:'#fb7185'},{l:'Інвестиції',v:AZ.inv,c:'#f59e0b'},{l:'Дім',v:AZ.home,c:'#a78bfa'}]);
+    drawDonut([{l:'Бізнес',v:biz,c:'#f87171'},{l:'Життя+Цілі+Резерв',v:life+goals+pension,c:'#818cf8'},{l:'Ріст/Розвиток',v:AZ.grow+AZ.ads+AZ.dev,c:'#4ade80'},{l:'Борг',v:AZ.debt,c:'#fb7185'},{l:'Товарна каса',v:AZ.res,c:'#22d3ee'},{l:'Інвестиції',v:AZ.inv-AZ.res,c:'#f59e0b'},{l:'Дім',v:AZ.home,c:'#a78bfa'}]);
   } else {
     drawDonut([{l:'Бізнес',v:biz,c:'#f87171'},{l:'Життя+Цілі+Резерв',v:life+goals+pension,c:'#818cf8'},{l:'Інвестиції',v:comm,c:'#f59e0b'},{l:'Залишок',v:Math.max(0,free-comm),c:'#4ade80'}]);
   }
