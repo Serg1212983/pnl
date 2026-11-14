@@ -314,6 +314,8 @@ select.inp option{background:var(--s2);}
     <div class="inp-group">
       <div class="inp-label">Оборот (валовий продаж)</div>
       <div class="inp-wrap"><span class="inp-currency">₴</span><input class="inp" type="number" id="pnl-oborot" placeholder="0" oninput="pnlRecalc()"></div>
+      <div class="inp-label" style="margin-top:8px;">з них опт (націнка ~10%)</div>
+      <div class="inp-wrap"><span class="inp-currency">₴</span><input class="inp" type="number" id="pnl-opt" placeholder="0" oninput="pnlRecalc()"></div>
     </div>
     <div class="inp-group">
       <div class="inp-label">Маржа % (вводь відсоток)</div>
@@ -373,7 +375,7 @@ select.inp option{background:var(--s2);}
         </div>
         <div style="text-align:right;font-size:12px;color:var(--muted);width:100%">Разом: <span id="pnl-log-sum" style="color:var(--text);font-weight:700">0₴</span><div id="pnl-log-if-note" style="font-size:11px;color:var(--muted);"></div></div>
       </div>
-      <div class="row"><div class="row-name">ЗП дружині <span class="badge badge-auto">2% від обороту</span></div><div class="row-pct">від об.</div><div class="row-amt" style="color:var(--red)" id="pnl-amt-zp">0₴</div></div>
+      <div class="row"><div class="row-name">ЗП дружині <span class="badge badge-auto">2% від обороту · 1% від опту</span></div><div class="row-pct">від об.</div><div class="row-amt" style="color:var(--red)" id="pnl-amt-zp">0₴</div></div>
       <div class="row"><div class="row-name">Амортизація + Паливо <span class="badge badge-fixed">фіксована</span></div><div class="row-pct" id="pp-fuel">—</div><div class="row-amt" style="color:var(--red)">4 100₴</div></div>
 
       <div class="subsec-title">Сервіси — <span id="pnl-total-serv" style="color:var(--red)">0₴</span></div>
@@ -955,7 +957,7 @@ function rewardShare(idx,first){ return (first===null||idx<first)?0:REGION.rewar
 // Модель місяця: Закарпаття і ІФ рахуються окремо.
 // Закарпаття = загальні цифри мінус ІФ. ІФ = своя маржа мінус свої витрати (комісія, зв'язок, частка логістики).
 function monthModel(o){
-  const fb=fixedBlock(o.ob,o.log,o.y,o.m,o.ifOb);               // повні обов'язкові (з агентом і всією логістикою)
+  const fb=fixedBlock(o.ob,o.log,o.y,o.m,o.ifOb,o.opt);               // повні обов'язкові (з агентом і всією логістикою)
   const ir=ifResult(o.ob,o.mz,o.log,o.ifOb,o.ifMzPct,o.ifLog,o.y,o.m);
   const zakMz=o.mz-ir.ifMz;
   const zakLog=o.log-ir.ifLog;
@@ -974,8 +976,10 @@ function monthModel(o){
   return {fb,ir,zakMz,zakLog,zakOb,zakFree,fund,reg,ifGen,ifLoss,zakBase,aZ,aI,ifMonthNo};
 }
 function sumAlloc(a,b){const r={};['free','grow','ads','dev','debt','res','home','inv','short'].forEach(f=>r[f]=(a?a[f]:0)+(b?b[f]:0));return r;}
-function fixedBlock(ob,log,y,m,ifOb){
-  const mand=FIXED.orenda+FIXED.podatky+FIXED.fuel+log+ob*.02;
+// ЗП дружині: 2% від звичайного обороту, 1% від оптового (низька націнка ~10%)
+function zpOf(ob,opt){ const o=Math.min(Math.max(opt||0,0),ob||0); return ((ob||0)-o)*.02+o*.01; }
+function fixedBlock(ob,log,y,m,ifOb,opt){
+  const mand=FIXED.orenda+FIXED.podatky+FIXED.fuel+log+zpOf(ob,opt);
   const serv=FIXED.claude+FIXED.azure+FIXED.checkbox+FIXED.internet+FIXED.vodafone;
   const ag=agentCost(ifOb,y,m);
   const life=17000+ob*.0035;
@@ -1020,7 +1024,7 @@ function kasaLedger(uptoIdx){
     const st=stageOf(o.y,o.m);
     if(!st){ if(o.i>=2026*12+4) t.comm25+=(+d.marzha||0)*.25; return; } // травень–серпень 2026: стара схема 25%
     const log=(+d.log1||0)+(+d.log2||0)+(+d.log3||0)+(+d.log4||0);
-    const M=monthModel({ob:+d.oborot||0,mz:+d.marzha||0,log,ifOb:+d.ifOb||0,ifMzPct:+d.ifMzPct||0,ifLog:+d.ifLog||0,y:o.y,m:o.m,idx:o.i,firstIF,st,resSoFar:t.res,debtLeft:DEBT_START-t.debt});
+    const M=monthModel({ob:+d.oborot||0,opt:+d.opt||0,mz:+d.marzha||0,log,ifOb:+d.ifOb||0,ifMzPct:+d.ifMzPct||0,ifLog:+d.ifLog||0,y:o.y,m:o.m,idx:o.i,firstIF,st,resSoFar:t.res,debtLeft:DEBT_START-t.debt});
     t.region+=M.reg; t.reward+=M.fund; t.agBonus+=M.ir.agBonus||0; t.cfund+=M.fb.cfund||0;
     const a=sumAlloc(M.aZ,M.aI);
     ['inv','res','debt','home','grow','ads','dev'].forEach(f=>t[f]+=a[f]);
@@ -1030,7 +1034,7 @@ function kasaLedger(uptoIdx){
 }
 // Поточний місяць (з полів вводу)
 function currentModelInputs(){
-  return {ob:nv('pnl-oborot'),mz:nv('pnl-marzha'),log:nv('log1')+nv('log2')+nv('log3')+nv('log4'),
+  return {ob:nv('pnl-oborot'),opt:nv('pnl-opt'),mz:nv('pnl-marzha'),log:nv('log1')+nv('log2')+nv('log3')+nv('log4'),
           ifOb:nv('if-ob'),ifMzPct:parseFloat(document.getElementById('if-mz-pct').value)||0,ifLog:nv('if-log')};
 }
 function currentAlloc(){
@@ -1429,12 +1433,12 @@ function loadPnl(){
   if(d.marzhaPct){document.getElementById('pnl-marzha-pct').value=d.marzhaPct;const s=document.getElementById('pnl-marzha-sum');if(s)s.textContent=d.marzha>0?Math.round(d.marzha).toLocaleString('uk-UA')+' ₴':'— ₴';}else if(d.marzha&&d.oborot){const pct=(d.marzha/d.oborot*100);document.getElementById('pnl-marzha-pct').value=pct.toFixed(2);const s=document.getElementById('pnl-marzha-sum');if(s)s.textContent=Math.round(d.marzha).toLocaleString('uk-UA')+' ₴';}
   sv('log1',d.log1);sv('log2',d.log2);sv('log3',d.log3);sv('log4',d.log4);
   sv('pnl-tovar',d.tovar);sv('pnl-noviTM',d.noviTM);sv('pnl-mkt',d.mkt);sv('pnl-other',d.other);
-  sv('if-ob',d.ifOb);sv('if-mz-pct',d.ifMzPct);sv('if-log',d.ifLog);
+  sv('if-ob',d.ifOb);sv('if-mz-pct',d.ifMzPct);sv('if-log',d.ifLog);sv('pnl-opt',d.opt);
   pnlRecalc();renderPnlMonths();
 }
 
 function pnlSave(){
-  DB.pnl[pnlKey()]={oborot:nv('pnl-oborot'),marzha:nv('pnl-marzha'),marzhaPct:parseFloat(document.getElementById('pnl-marzha-pct').value)||0,log1:nv('log1'),log2:nv('log2'),log3:nv('log3'),log4:nv('log4'),tovar:nv('pnl-tovar'),noviTM:nv('pnl-noviTM'),mkt:nv('pnl-mkt'),other:nv('pnl-other'),ifOb:nv('if-ob'),ifMzPct:parseFloat(document.getElementById('if-mz-pct').value)||0,ifLog:nv('if-log')};
+  DB.pnl[pnlKey()]={oborot:nv('pnl-oborot'),opt:nv('pnl-opt'),marzha:nv('pnl-marzha'),marzhaPct:parseFloat(document.getElementById('pnl-marzha-pct').value)||0,log1:nv('log1'),log2:nv('log2'),log3:nv('log3'),log4:nv('log4'),tovar:nv('pnl-tovar'),noviTM:nv('pnl-noviTM'),mkt:nv('pnl-mkt'),other:nv('pnl-other'),ifOb:nv('if-ob'),ifMzPct:parseFloat(document.getElementById('if-mz-pct').value)||0,ifLog:nv('if-log')};
   saveDB();renderPnlMonths();
   // оновити Нерухомість якщо вона ініціалізована
   if(document.getElementById('re-from-pnl')) realtyCalc();
@@ -1458,7 +1462,7 @@ function pnlRecalc(){
   const log=nv('log1')+nv('log2')+nv('log3')+nv('log4');
   const fb=M.fb, ir=M.ir;
   const zakMz=M.zakMz, zakOb=M.zakOb, free=M.zakFree, mz=zakMz;      // далі «маржа» = маржа Закарпаття
-  const zp=ob*.02,vidp=ob*.0035,pension=fb.pension,life=fb.life,goals=fb.goals;
+  const zp=zpOf(ob,nv('pnl-opt')),vidp=ob*.0035,pension=fb.pension,life=fb.life,goals=fb.goals;
   const tovar=nv('pnl-tovar'),noviTM=nv('pnl-noviTM'),mkt=nv('pnl-mkt'),other=nv('pnl-other');
   const variable=tovar+noviTM+mkt+other;
   const biz=fb.mand+fb.serv+fb.cfund-ir.ifLog;
@@ -2043,9 +2047,9 @@ function sendNearViber(){broadcastViber('27');}
 // Анютка — нагадування (не в розрахунках бізнесу)
 function anyutkaCalc(){
   // ЗП дружини = 2% від обороту поточного місяця (live з поля або зі збереженого PnL)
-  let ob=nv('pnl-oborot');
-  if(!ob){ const d=DB.pnl[pnlKey()]||{}; ob=d.oborot||0; }
-  const zp=ob*.02;
+  let ob=nv('pnl-oborot'), opt=nv('pnl-opt');
+  if(!ob){ const d=DB.pnl[pnlKey()]||{}; ob=d.oborot||0; opt=d.opt||0; }
+  const zp=zpOf(ob,opt);
   const zpEl=document.getElementById('anyutka-zp-auto');
   if(zpEl) zpEl.textContent = zp>0 ? fmt(zp) : '0₴ (немає обороту за місяць)';
   const family = zp>=20000 ? 2700 : 1700;
